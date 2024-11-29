@@ -446,15 +446,15 @@ app.get('/equipos-disponibles-fixture/:id_fixture', (req, res) => {
 });
 
 
-// Endpoint para inscribir equipo
+
+
 app.post('/inscribir-equipo', (req, res) => {
-    const { id_torneoPKFK, num_equipoPKFK } = req.body;
+    const { id_torneoPKFK, num_equipoPKFK, representante, dt } = req.body;
 
     console.log("Datos recibidos para inscripción:", req.body);
 
-    // Validar que los datos requeridos estén presentes
-    if (!id_torneoPKFK || !num_equipoPKFK) {
-        return res.status(400).json({ error: 'Ambos campos (id_torneoPKFK y num_equipoPKFK) son obligatorios.' });
+    if (!id_torneoPKFK || !num_equipoPKFK || !representante || !dt) {
+        return res.status(400).json({ error: 'Todos los campos (id_torneoPKFK, num_equipoPKFK, representante y DT) son obligatorios.' });
     }
 
     try {
@@ -470,24 +470,24 @@ app.post('/inscribir-equipo', (req, res) => {
             return res.status(409).json({ error: 'El equipo ya está inscrito en este torneo.' });
         }
 
-        // Preparar y ejecutar la consulta para insertar el nuevo registro en inscribeEquipo
+        // Insertar nuevo registro en inscribeEquipo
         const insertarInscribeEquipo = db.prepare(`
-            INSERT INTO inscribeEquipo (num_equipoPKFK, id_torneoPKFK)
-            VALUES (?, ?)
+            INSERT INTO inscribeEquipo (num_equipoPKFK, id_torneoPKFK, representante, dt)
+            VALUES (?, ?, ?, ?)
         `);
-        const resultado = insertarInscribeEquipo.run(num_equipoPKFK, id_torneoPKFK);
+        const resultado = insertarInscribeEquipo.run(num_equipoPKFK, id_torneoPKFK, representante, dt);
 
-        // Devolver respuesta con el ID de la nueva instancia insertada
         res.status(201).json({
             message: 'Equipo inscrito correctamente en el torneo.',
             id: resultado.lastInsertRowid
         });
     } catch (error) {
         console.error('Error al inscribir equipo:', error.message);
-
         res.status(500).json({ error: 'Ocurrió un error al inscribir el equipo en el torneo.' });
     }
 });
+
+
 
 
 app.post('/generar-encuentros', (req, res) => {

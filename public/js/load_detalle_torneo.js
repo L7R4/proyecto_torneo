@@ -90,9 +90,6 @@ function createItemFixtures_HTML(id_fixture,ruedas,fechas,categoria,division) {
 }
 
 
-
-
-
 function createFormNewFixture() {
   const listFixtures = document.getElementById('listFixtures');
    
@@ -154,24 +151,24 @@ async function showTeams(id_fixture) {
       const data = await response.json();
       const teamsContainer = document.getElementById('teamsContainer');
 
-      let htmlContent = `<h2>Equipos inscritos</h2>`;
+      let htmlContent = `<div><button id="btnInscribirEquipo" onclick="openInscribirPopup(${id_fixture})">Inscribir equipo</button><h2>Equipos inscritos</h2></div>`;
       if (!data.equipos || data.equipos.length === 0) {
           htmlContent += `<p>No hay equipos inscritos en este fixture.</p>`;
       } else {
           htmlContent += `<ul>`;
           data.equipos.forEach(team => {
-              htmlContent += `<li>${team.nombre}</li>`;
+              htmlContent += `<li>
+                <p>${team.nombre}</p>
+              </li>`;
           });
           htmlContent += `</ul>`;
       }
 
-      htmlContent += `<button id="btnInscribirEquipo" onclick="openInscribirPopup(${id_fixture})">Inscribir equipo</button>`;
       teamsContainer.innerHTML = htmlContent;
   } catch (error) {
       console.error('Error:', error.message);
   }
 }
-
 
 async function openInscribirPopup(id_fixture) {
   const response = await fetch(`/equipos-disponibles-fixture/${id_fixture}`);
@@ -187,13 +184,12 @@ async function openInscribirPopup(id_fixture) {
               content += `
                   <li>
                       ${team.nombre} 
-                      <button onclick="inscribirEquipo(${id_fixture}, ${team.num_equipo})">Inscribir</button>
+                      <button onclick="openInscribirForm(${id_fixture}, ${team.num_equipo})">Inscribir</button>
                   </li>`;
           });
           content += `</ul>`;
       }
 
-      // Usar Tingle.js para mostrar el popup
       const modal = new tingle.modal({
           footer: true,
           stickyFooter: false,
@@ -203,23 +199,55 @@ async function openInscribirPopup(id_fixture) {
 
       modal.setContent(content);
       modal.open();
+
+      // Guardar la instancia del modal en una variable global
+      window.currentModal = modal;
   } else {
       console.error('Error al cargar equipos disponibles:', response.statusText);
   }
 }
 
-async function inscribirEquipo(id_fixture, id_equipo) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const tournamentId = urlParams.get('id'); // Obtiene el ID del torneo de los parámetros de la URL
+async function openInscribirForm(id_fixture, id_equipo) {
+  // Crear formulario para capturar representante y DT
+  const content = `
+      <h2>Inscribir equipo</h2>
+      <form id="formInscribirEquipo">
+          <label for="representante">Representante:</label>
+          <input type="text" id="representante" name="representante" required>
+          <label for="dt">DT:</label>
+          <input type="text" id="dt" name="dt" required>
+          <button type="button" onclick="submitInscripcion(${id_fixture}, ${id_equipo})">Confirmar inscripción</button>
+      </form>
+  `;
 
-  if (!tournamentId || !id_equipo) {
-      alert('Datos insuficientes para inscribir el equipo.');
+  const modal = new tingle.modal({
+      footer: true,
+      stickyFooter: false,
+      closeMethods: ['overlay', 'button', 'escape'],
+      closeLabel: "Cerrar",
+  });
+
+  modal.setContent(content);
+  modal.open();
+}
+
+async function submitInscripcion(id_fixture, id_equipo) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const tournamentId = urlParams.get('id');
+
+  const representante = document.getElementById('representante').value.trim();
+  const dt = document.getElementById('dt').value.trim();
+
+  if (!tournamentId || !id_equipo || !representante || !dt) {
+      alert('Todos los campos son obligatorios.');
       return;
   }
 
   const body = {
       num_equipoPKFK: id_equipo,
-      id_torneoPKFK: tournamentId
+      id_torneoPKFK: tournamentId,
+      representante: representante,
+      dt: dt
   };
 
   try {
@@ -235,8 +263,15 @@ async function inscribirEquipo(id_fixture, id_equipo) {
 
       if (response.ok) {
           alert(data.message);
-          // Actualizar la lista de equipos inscritos
-          showTeams(id_fixture);
+          showTeams(id_fixture); // Actualizar la lista de equipos inscritos
+
+          // Cerrar el modal de Tingle.js
+          if (window.currentModal) {
+            window.currentModal.close(); // Cierra el modal
+            window.currentModal.destroy(); // Limpia la instancia
+            window.currentModal = null; // Asegura que no se guarde referencia a un modal eliminado
+        }
+
       } else {
           alert(`Error: ${data.error}`);
       }
@@ -245,6 +280,81 @@ async function inscribirEquipo(id_fixture, id_equipo) {
       alert('Error al intentar inscribir el equipo. Por favor, inténtalo nuevamente.');
   }
 }
+
+
+
+// async function openInscribirPopup(id_fixture) {
+//   const response = await fetch(`/equipos-disponibles-fixture/${id_fixture}`);
+//   if (response.ok) {
+//       const data = await response.json();
+
+//       let content = `<h2>Equipos disponibles</h2>`;
+//       if (data.equipos.length === 0) {
+//           content += `<p>No hay equipos disponibles para inscribir en este fixture.</p>`;
+//       } else {
+//           content += `<ul>`;
+//           data.equipos.forEach(team => {
+//               content += `
+//                   <li>
+//                       ${team.nombre} 
+//                       <button onclick="inscribirEquipo(${id_fixture}, ${team.num_equipo})">Inscribir</button>
+//                   </li>`;
+//           });
+//           content += `</ul>`;
+//       }
+
+//       // Usar Tingle.js para mostrar el popup
+//       const modal = new tingle.modal({
+//           footer: true,
+//           stickyFooter: false,
+//           closeMethods: ['overlay', 'button', 'escape'],
+//           closeLabel: "Cerrar",
+//       });
+
+//       modal.setContent(content);
+//       modal.open();
+//   } else {
+//       console.error('Error al cargar equipos disponibles:', response.statusText);
+//   }
+// }
+
+// async function inscribirEquipo(id_fixture, id_equipo) {
+//   const urlParams = new URLSearchParams(window.location.search);
+//   const tournamentId = urlParams.get('id'); // Obtiene el ID del torneo de los parámetros de la URL
+
+//   if (!tournamentId || !id_equipo) {
+//       alert('Datos insuficientes para inscribir el equipo.');
+//       return;
+//   }
+
+//   const body = {
+//       num_equipoPKFK: id_equipo,
+//       id_torneoPKFK: tournamentId
+//   };
+
+//   try {
+//       const response = await fetch(`/inscribir-equipo`, {
+//           method: 'POST',
+//           headers: {
+//               'Content-Type': 'application/json',
+//           },
+//           body: JSON.stringify(body),
+//       });
+
+//       const data = await response.json();
+
+//       if (response.ok) {
+//           alert(data.message);
+//           // Actualizar la lista de equipos inscritos
+//           showTeams(id_fixture);
+//       } else {
+//           alert(`Error: ${data.error}`);
+//       }
+//   } catch (error) {
+//       console.error('Error al inscribir equipo:', error);
+//       alert('Error al intentar inscribir el equipo. Por favor, inténtalo nuevamente.');
+//   }
+// }
 
 
 
