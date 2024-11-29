@@ -13,36 +13,30 @@ const app = express();
 
 app.use(express.static('public'));
 
-
+// db.run("PRAGMA journal_mode=WAL;");
 
 
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Para datos de formularios
 
-app.get('/torneo/registrar_jugador', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'registrar_jugador.html'));
-});
-
-app.get('/torneo/registrar_equipo', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'registrar_equipo.html'));
-});
 
 // Endpoint para registrar jugador
-app.post('/jugador', (req, res) => {
-    const { dni, nombre, apellido, fecha_nac, direcc, id_categoriaFK } = req.body;
+app.post('/create_jugador', (req, res) => {
+    const { dni, nombre, apellido, fecha_nac, direcc, foto,  id_categoriaFK, num_equipoFK } = req.body;
 
-    if (!dni || !nombre || !apellido || !fecha_nac || !direcc || !id_categoriaFK) {
+    if (!dni || !nombre || !apellido || !fecha_nac || !direcc || !foto || !id_categoriaFK || !num_equipoFK) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
     try {
+        
         const insertarJugador = db.prepare(`
-            INSERT INTO jugador (dni, nombre, apellido, fecha_nac, direcc, id_categoriaFK)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO jugador (dni, nombre, apellido, fecha_nac, direcc, foto, id_categoriaFK, num_equipoFK)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
-        const resultado = insertarJugador.run(dni, nombre, apellido, fecha_nac, direcc, id_categoriaFK);
+        const resultado = insertarJugador.run(dni, nombre, apellido, fecha_nac, direcc, foto, id_categoriaFK, num_equipoFK);
 
         res.json({ message: 'Usuario registrado exitosamente', id: resultado.lastInsertRowid });
     } catch (error) {
@@ -100,6 +94,150 @@ app.get('/jugadores/categoria/:id_categoriaFK', (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al obtener los jugadores' });
     }
 });
+
+app.get('/encargados', (req, res) => {
+    try {
+        // Consulta para obtener los equipos por categoría y división
+        const consultaEncargados = db.prepare(`
+            SELECT * FROM encargado
+        `);
+        const encargados = consultaEncargados.all();
+        // Si no se encuentran equipos
+        if (encargados.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron encargados' });
+        }
+
+        // Devolver los equipos encontrados
+        res.json(encargados);
+    } catch (error) {
+        console.error('Error al obtener encargados:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener los encargados' });
+    }
+});
+
+// Endpoint para traer los equipos
+app.get('/equipos', (req, res) => {
+    try {
+        // Consulta para obtener los equipos por categoría y división
+        const consultaEquipos = db.prepare(`
+            SELECT * FROM equipo
+        `);
+        const equipos = consultaEquipos.all();
+        // Si no se encuentran equipos
+        if (equipos.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron equipos para esta categoría y división' });
+        }
+
+        // Devolver los equipos encontrados
+        res.json(equipos);
+    } catch (error) {
+        console.error('Error al obtener equipos:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener los equipos' });
+    }
+});
+
+
+app.get('/torneos', (req, res) => {
+    try {
+        // Consulta para obtener los torneos con el nombre del encargado
+        const torneosConsultas = db.prepare(`
+            SELECT 
+                torneo.id_torneo, 
+                torneo.nombre, 
+                torneo.fecha_inicio_insc, 
+                torneo.fecha_final_insc, 
+                torneo.fecha_inicio_torneo, 
+                torneo.fecha_final_torneo, 
+                encargado.nombre AS nombreEncargado
+            FROM torneo
+            JOIN encargado ON torneo.dni_encargadoFK = encargado.dni
+        `);
+        const torneos = torneosConsultas.all();
+        console.log(torneos)
+        // Si no se encuentran torneos
+        if (torneos.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron torneos' });
+        }
+
+        // Devolver los torneos personalizados
+        res.json(torneos);
+    } catch (error) {
+        console.error('Error al obtener torneos:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener los torneos' });
+    }
+});
+
+
+app.post('/create_torneos', (req, res) => {
+    try {
+        // Obtener los datos del torneo desde el cuerpo de la solicitud
+        const { nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo, dni_encargadoFK} = req.body;
+        console.log('Datos recibidos:', req.body);
+        // Insertar el nuevo torneo en la base de datos
+        const insertTorneo = db.prepare(`
+            INSERT INTO torneo (nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo, dni_encargadoFK)
+            VALUES (?, ?, ?, ?, ?,?)
+        `);
+        const result = insertTorneo.run(nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo,dni_encargadoFK);
+
+        // Obtener el ID del torneo recién creado
+        const newTorneoId = result.lastInsertRowid;
+
+        // Responder con el ID del nuevo torneo
+        res.json({ id: newTorneoId });
+    } catch (error) {
+        console.error('Error al crear el torneo:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al crear el torneo' });
+    }
+});
+
+app.get('/torneo/:id', (req, res) => {
+    const torneoId = req.params.id;
+
+    // Buscar el torneo en la base de datos usando el ID
+    const torneo = db.prepare(`
+        SELECT 
+                torneo.id_torneo, 
+                torneo.nombre, 
+                torneo.fecha_inicio_insc, 
+                torneo.fecha_final_insc, 
+                torneo.fecha_inicio_torneo, 
+                torneo.fecha_final_torneo, 
+                encargado.nombre AS nombreEncargado
+            FROM torneo
+            JOIN encargado ON torneo.dni_encargadoFK = encargado.dni
+            WHERE torneo.id_torneo = ?
+    `).get(torneoId);
+
+    if (torneo) {
+        res.json(torneo);
+    } else {
+        res.status(404).json({ error: "Torneo no encontrado" });
+    }
+});
+
+app.get('/torneo/:id/fixtures', (req, res) => {
+    const torneoId = req.params.id;
+
+    // Buscar las fixtures para el torneo en la base de datos
+    const fixtures = db.prepare(`
+        SELECT 
+            f.*, 
+            c.nombre AS categoria, 
+            d.nombre AS division
+        FROM fixture f
+        JOIN categoria c ON f.id_categoriaFK = c.id_categoria
+        JOIN division d ON f.id_divisionFK = d.id_division
+        WHERE f.id_torneoFK = ?
+    `).all(torneoId);
+
+    if (fixtures.length > 0) {
+        res.json({ fixtures });
+    } else {
+        res.status(404).json({ error: "No se encontraron fixtures para este torneo" });
+    }
+});
+
 // Endpoint para traer jugadores por categoria y division
 app.get('/equipos/categoria/:id_categoriaFK/:id_divisionFK', (req, res) => {
     const { id_categoriaFK, id_divisionFK } = req.params;
@@ -124,30 +262,47 @@ app.get('/equipos/categoria/:id_categoriaFK/:id_divisionFK', (req, res) => {
     }
 });
 
-// Endpoint para crear un fixture
 app.post('/fixture', (req, res) => {
-    const { rueda, id_categoriaFK, id_divisionFK } = req.body;
+    const { cantidad_ruedas, id_categoriaFK, id_divisionFK,id_torneoFK } = req.body;
 
     // Validar que los campos requeridos estén presentes
-    if (!rueda || !id_categoriaFK || !id_divisionFK) {
+    if (!cantidad_ruedas || !id_categoriaFK || !id_divisionFK || !id_torneoFK) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
     try {
-        // Insertar el nuevo fixture en la base de datos sin calcular la fecha
+        // Insertar el nuevo fixture en la base de datos
         const insertarFixture = db.prepare(`
-            INSERT INTO Fixture (rueda, id_categoriaFK, id_divisionFK)
-            VALUES (?, ?, ?)
+            INSERT INTO fixture (cantidad_ruedas, id_categoriaFK, id_divisionFK,id_torneoFK)
+            VALUES (?, ?, ?, ?)
         `);
-        const resultadoFixture = insertarFixture.run(rueda, id_categoriaFK, id_divisionFK);
+        const resultadoFixture = insertarFixture.run(cantidad_ruedas, id_categoriaFK, id_divisionFK, id_torneoFK);
 
-        // Devolver una respuesta con el ID del fixture insertado
-        res.json({ message: 'Fixture creado exitosamente', id: resultadoFixture.lastInsertRowid });
+        const obtenerDatos = db.prepare(
+            `
+            SELECT c.nombre AS categoria, d.nombre AS division
+            FROM fixture f
+            JOIN categoria c ON f.id_categoriaFK = c.id_categoria
+            JOIN division d ON f.id_divisionFK = d.id_division
+            WHERE f.id_fixture = ?
+        `
+        );
+        const datosFixture = obtenerDatos.get(resultadoFixture.lastInsertRowid);
+        console.log(datosFixture)
+        // Devolver una respuesta con el ID del fixture insertado, junto con el nombre de la categoría y la división
+        res.json({
+            message: 'Fixture creado exitosamente',
+            id: resultadoFixture.lastInsertRowid,
+            categoria: datosFixture.categoria,
+            division: datosFixture.division
+        });
     } catch (error) {
         console.error('Error al crear fixture:', error.message);
         res.status(500).json({ error: 'Ocurrió un error al crear el fixture' });
     }
 });
+
+
 
 // Endpoint para actualizar el fixture y calcular la fecha
 app.put('/fixture/:id', (req, res) => {
@@ -198,33 +353,142 @@ app.put('/fixture/:id', (req, res) => {
     }
 });
 
-// Endpoint para crear una instancia en InscribeEquipo
-app.post('/inscribir-equipo', (req, res) => {
-    const { id_torneoFK, num_equipoFK } = req.body;
+app.get('/equipos-inscritos-fixture/:id_fixture', (req, res) => {
+    const { id_fixture } = req.params; // Usamos req.params para obtener el id del fixture.
+    console.log("ID del fixture recibido:", id_fixture);
 
-    // Validar que los datos requeridos estén presentes
-    if (!id_torneoFK || !num_equipoFK) {
-        return res.status(400).json({ error: 'Ambos campos (id_torneoFK y num_equipoFK) son obligatorios' });
+    try {
+        // Obtener categoría y división del fixture
+        const consultaFixture = db.prepare(`
+            SELECT id_torneoFK, id_categoriaFK, id_divisionFK
+            FROM fixture
+            WHERE id_fixture = ?
+        `);
+        const fixture = consultaFixture.get(id_fixture);
+
+        if (!fixture) {
+            return res.status(404).json({ error: 'Fixture no encontrado' });
+        }
+
+        const { id_torneoFK, id_categoriaFK, id_divisionFK } = fixture;
+
+        // Consultar equipos inscritos en el torneo, filtrados por categoría y división
+        const consultaEquiposInscritos = db.prepare(`
+            SELECT e.num_equipo, e.nombre
+            FROM equipo e
+            INNER JOIN inscribeEquipo ie ON e.num_equipo = ie.num_equipoPKFK
+            WHERE ie.id_torneoPKFK = ?
+            AND e.id_categoriaFK = ?
+            AND e.id_divisionFK = ?
+        `);
+
+        const equiposInscritos = consultaEquiposInscritos.all(id_torneoFK, id_categoriaFK, id_divisionFK);
+
+        res.json({
+            message: 'Equipos inscritos obtenidos correctamente',
+            equipos: equiposInscritos
+        });
+    } catch (error) {
+        console.error('Error al obtener equipos inscritos:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener los equipos inscritos' });
+    }
+});
+
+
+// Endpoint para obtener equipos disponibles para inscribir en un torneo
+app.get('/equipos-disponibles-fixture/:id_fixture', (req, res) => {
+    const { id_fixture } = req.params;
+
+    // Validar que se envíen los datos requeridos
+    if (!id_fixture) {
+        return res.status(400).json({ error: 'El id_fixture es obligatorio' });
     }
 
     try {
-        // Preparar y ejecutar la consulta para insertar el nuevo registro en InscribeEquipo
+        // Obtener categoría y división del fixture
+        const consultaFixture = db.prepare(`
+            SELECT id_torneoFK, id_categoriaFK, id_divisionFK
+            FROM fixture
+            WHERE id_fixture = ?
+        `);
+        const fixture = consultaFixture.get(id_fixture);
+
+        if (!fixture) {
+            return res.status(404).json({ error: 'Fixture no encontrado' });
+        }
+
+        const { id_torneoFK, id_categoriaFK, id_divisionFK } = fixture;
+
+        // Consultar equipos que cumplen con la categoría y división, pero no están inscritos en el torneo
+        const consultaEquiposDisponibles = db.prepare(`
+            SELECT e.num_equipo, e.nombre
+            FROM equipo e
+            WHERE e.id_categoriaFK = ? AND e.id_divisionFK = ?
+            AND e.num_equipo NOT IN (
+                SELECT num_equipoPKFK
+                FROM inscribeEquipo
+                WHERE id_torneoPKFK = ?
+            )
+        `);
+
+        console.log(consultaEquiposDisponibles)
+
+        const equiposDisponibles = consultaEquiposDisponibles.all(id_categoriaFK, id_divisionFK, id_torneoFK);
+
+        res.json({
+            message: 'Equipos disponibles obtenidos correctamente',
+            equipos: equiposDisponibles
+        });
+    } catch (error) {
+        console.error('Error al obtener equipos disponibles:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener los equipos disponibles' });
+    }
+});
+
+
+// Endpoint para inscribir equipo
+app.post('/inscribir-equipo', (req, res) => {
+    const { id_torneoPKFK, num_equipoPKFK } = req.body;
+
+    console.log("Datos recibidos para inscripción:", req.body);
+
+    // Validar que los datos requeridos estén presentes
+    if (!id_torneoPKFK || !num_equipoPKFK) {
+        return res.status(400).json({ error: 'Ambos campos (id_torneoPKFK y num_equipoPKFK) son obligatorios.' });
+    }
+
+    try {
+        // Verificar si el equipo ya está inscrito en el torneo
+        const verificarEquipo = db.prepare(`
+            SELECT COUNT(*) AS count
+            FROM inscribeEquipo
+            WHERE num_equipoPKFK = ? AND id_torneoPKFK = ?
+        `);
+        const { count } = verificarEquipo.get(num_equipoPKFK, id_torneoPKFK);
+
+        if (count > 0) {
+            return res.status(409).json({ error: 'El equipo ya está inscrito en este torneo.' });
+        }
+
+        // Preparar y ejecutar la consulta para insertar el nuevo registro en inscribeEquipo
         const insertarInscribeEquipo = db.prepare(`
-            INSERT INTO InscribeEquipo (id_torneoFK, num_equipoFK)
+            INSERT INTO inscribeEquipo (num_equipoPKFK, id_torneoPKFK)
             VALUES (?, ?)
         `);
-        const resultado = insertarInscribeEquipo.run(id_torneoFK, num_equipoFK);
+        const resultado = insertarInscribeEquipo.run(num_equipoPKFK, id_torneoPKFK);
 
         // Devolver respuesta con el ID de la nueva instancia insertada
-        res.json({
-            message: 'Equipo inscrito correctamente en el torneo',
+        res.status(201).json({
+            message: 'Equipo inscrito correctamente en el torneo.',
             id: resultado.lastInsertRowid
         });
     } catch (error) {
         console.error('Error al inscribir equipo:', error.message);
-        res.status(500).json({ error: 'Ocurrió un error al inscribir el equipo en el torneo' });
+
+        res.status(500).json({ error: 'Ocurrió un error al inscribir el equipo en el torneo.' });
     }
 });
+
 
 app.post('/generar-encuentros', (req, res) => {
     const { id_fixtureFK } = req.body;

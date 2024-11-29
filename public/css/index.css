@@ -9,7 +9,11 @@ main > .panelContainer{
     width: 65%;
 }
 
-
+#registerTorneoForm{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
 .panelContainer:nth-child(1){
     width: 35%;
     display: flex;
@@ -85,4 +89,64 @@ a.torneoItemWrapper > .containerInfo > .itemInfo > div > p{
     font-family: raleway-semibold;
     font-size: clamp(1.1rem, 1vw, 1.4rem);
     color: var(--primary-color);
+}
+
+
+/* MOdal */
+#registerTorneoForm input,
+#registerTorneoForm select {
+    width: 40%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--secundary-color);
+    background-color: #f9f9f9;
+    font-size: 14px;
+    color: var(--primary-color);
+}
+#registerTorneoForm .inputWrapper{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    width: 48%;
+}
+
+#registerTorneoForm input,#registerTorneoForm select{
+    width: 100%;
+}
+#registerTorneoForm label{
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    color: var(--primary-color);
+}
+
+#formNewTorneoContainer > .tittleModal{
+    font-family: raleway-semibold;
+    font-size: clamp(2.4rem, 1.6vw, 3rem);
+    color: var(--secundary-color);
+}
+
+.tingle-btn--primary{
+    padding: .8rem 1rem !important;
+    border-radius: .6rem !important;
+    border-color: transparent !important;
+    background-color: var(--secundary-color) !important;
+    color: var(--fourth-color) !important;
+    font-family: raleway-semibold !important;
+    font-size: clamp(1.2rem, 1.1vw, 1.6rem) !important;
+    cursor: pointer !important; 
+}
+.tingle-btn--primary:disabled{
+    opacity: .5 !important;
+}
+
+.tingle-btn--default{
+    padding: .8rem 1rem !important;
+    border-radius: .6rem !important;
+    border: 1px solid var(--secundary-color)  !important;
+    background-color: transparent!important;
+    color: var(--primary-color) !important;
+    font-family: raleway-semibold !important;
+    font-size: clamp(1.2rem, 1.1vw, 1.6rem) !important;
+    cursor: pointer !important; 
 }

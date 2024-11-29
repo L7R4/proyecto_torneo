@@ -1,18 +1,18 @@
 var torneosLoaded;
 document.addEventListener('DOMContentLoaded', async () => {
     // const response = await fetch('/usuarios');
-    const response = await fetch('/generated_data.json')
+    const response = await fetch('/torneos')
     const data = await response.json();
-
+    
     const torneosList = document.getElementById('listaTorneosActivos');
     torneosList.innerHTML = ''; // Limpiar lista existente
 
     // Mostrar los usuarios en el navegador
-    data["torneo"].forEach(torneo => {
-        createItemTorneo_HTML(torneo["id"],torneo["nombre"],torneo["fecha_inicio_insc"],torneo["fecha_final_insc"],torneo["fecha_inicio_torneo"],torneo["fecha_final_torneo"],torneo["nombreEncargado"])
+    data.forEach(torneo => {
+        createItemTorneo_HTML(torneo["id_torneo"],torneo["nombre"],torneo["fecha_inicio_insc"],torneo["fecha_final_insc"],torneo["fecha_inicio_torneo"],torneo["fecha_final_torneo"],torneo["nombreEncargado"])
     });
 
-    torneosLoaded = data["torneo"]
+    torneosLoaded = data
     
 });
 

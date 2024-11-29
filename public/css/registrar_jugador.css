@@ -41,7 +41,7 @@
 }
 
 /* Input styles */
-.form-group input {
+.form-group input,.form-group select {
     width: 100%;
     padding: 12px;
     border-radius: 5px;

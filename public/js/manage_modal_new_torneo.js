@@ -1,11 +1,25 @@
-function renderFormNewTorneo() {
+async function renderFormNewTorneo() {
+    const response = await fetch('/encargados');
+    const data = await response.json();
+
+    const options = data.map(encargado => {
+        return `<option value="${encargado.dni}">${encargado.nombre}</option>`;
+    }).join("");
+
     return `
     <div id="formNewTorneoContainer">
         <h2 class="tittleModal">Registrar nuevo torneo</h2>
         <form id="registerTorneoForm">
             <div class="inputWrapper">
                 <label class="labelInput">Nombre del torneo</label>
-                <input type="text" class="inputCheck" placeholder="Ej. Torneo Gaona" />
+                <input type="text" name="nombre" class="inputCheck" placeholder="Ej. Torneo Gaona" />
+            </div>
+            <div class="inputWrapper">
+                <label for="encargado">Categoría:</label>
+                <select id="encargado" name="encargado" required>
+                    <option value="" disabled selected>Seleccionar categoría</option>
+                    ${options}
+                </select>
             </div>
             <div class="inputWrapper">
                 <label class="labelInput">Periodo de inscripción</label>
@@ -26,7 +40,7 @@ function renderFormNewTorneo() {
     `;
 }
 
-function newModalImport() {
+async function newModalImport() {
     let modal = new tingle.modal({
         footer: true,
         closeMethods: [''],
@@ -37,21 +51,41 @@ function newModalImport() {
     });
 
     // Set content
-    modal.setContent(renderFormNewTorneo());
+    modal.setContent(await renderFormNewTorneo());
 
     // Add a button
     modal.addFooterBtn('Guardar', 'tingle-btn tingle-btn--primary', async function () {
         console.log("Formulario enviado");
+
+        // Obtener los datos del formulario
+        const formData = new FormData(document.getElementById('registerTorneoForm'));
+        const body = {
+            nombre: formData.get('nombre'), // Suponiendo que agregues un campo 'nombre' al formulario
+            fecha_inicio_insc: formData.get('insc_inicio_date'),
+            fecha_final_insc: formData.get('insc_final_date'),
+            fecha_inicio_torneo: formData.get('torneo_inicio_date'),
+            fecha_final_torneo: formData.get('torneo_final_date'),
+            dni_encargadoFK: formData.get('encargado')
+        };
+        console.log('Body de la solicitud:', body);
+
+        try {
+            // Enviar los datos al servidor para crear el torneo
+            const response = await fetchFunction(body, '/create_torneos');
+
+            // Verificar si la creación fue exitosa
+            if (response && response.id) {
+                // Redirigir al detalle del torneo
+                window.location.href = `detalle_torneo.html?id=${response.id}`;
+            } else {
+                console.error('Error al crear el torneo');
+            }
+        } catch (error) {
+            console.error('Error al enviar los datos:', error);
+        }
+
         modal.close();
         modal.destroy();
-
-        // Obtiene el último torneo del JSON y calcula el nuevo ID
-        const lastTorneo = getMaxIdObject(torneosLoaded); 
-        const idNewTorneo = lastTorneo.id + 1;
-
-        // Redirige al nuevo URL con el ID calculado
-        window.location.href = `detalle_torneo.html?id=${idNewTorneo}`;
-
     });
 
     // Add another button
@@ -86,6 +120,9 @@ async function fetchFunction(body, url) {
         let response = await fetch(url, {
             method: "POST",
             body: JSON.stringify(body),
+            headers: {
+                'Content-Type': 'application/json'  // Aseguramos que se envíen como JSON
+            },
         })
         if (!response.ok) {
             throw new Error("Error")
@@ -96,14 +133,5 @@ async function fetchFunction(body, url) {
     }
 }
 
-function getMaxIdObject(jsonArray) {
-    if (!Array.isArray(jsonArray) || jsonArray.length === 0) {
-        throw new Error("El JSON debe ser un array no vacío.");
-    }
-
-    return jsonArray.reduce((maxObj, currentObj) => {
-        return currentObj.id > maxObj.id ? currentObj : maxObj;
-    });
-}
 
 
