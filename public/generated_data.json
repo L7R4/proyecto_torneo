@@ -1,0 +1,106 @@
+{
+    "categoria": [
+        {
+            "id_categoria": 1,
+            "nombre": "Infantil",
+            "edad_min": 5,
+            "edad_max": 10
+        },
+        {
+            "id_categoria": 2,
+            "nombre": "Juvenil",
+            "edad_min": 11,
+            "edad_max": 17
+        }
+    ],
+    "division": [
+        {
+            "id_division": 1,
+            "nombre": "Primera División"
+        },
+        {
+            "id_division": 2,
+            "nombre": "Segunda División"
+        }
+    ],
+    "encargado": [
+        {
+            "dni": 12345678,
+            "nombre": "Juan Pérez"
+        },
+        {
+            "dni": 87654321,
+            "nombre": "María Gómez"
+        }
+    ],
+    "equipo": [
+        {
+            "id_equipo": 1,
+            "nombre": "Los Halcones",
+            "id_categoria": 1,
+            "id_division": 1
+        },
+        {
+            "id_equipo": 2,
+            "nombre": "Las Águilas",
+            "id_categoria": 2,
+            "id_division": 2
+        }
+    ],
+    "jugador": [
+        {
+            "id_jugador": 1,
+            "dni": 23456789,
+            "nombre": "Carlos",
+            "apellido": "Lopez",
+            "id_equipo": 1
+        },
+        {
+            "id_jugador": 2,
+            "dni": 34567890,
+            "nombre": "Ana",
+            "apellido": "Martínez",
+            "id_equipo": 2
+        }
+    ],
+    "fixture": [
+        {
+            "id_fixture": 1,
+            "cantidad_ruedas": 2,
+            "cantidad_fechas": 0,
+            "id_categoriaFK": 1,
+            "id_divisionFK": 1,
+            "id_torneoFK": 1
+        },
+        {
+            "id_fixture": 2,
+            "cantidad_ruedas": 3,
+            "cantidad_fechas": 0,
+            "id_categoriaFK": 2,
+            "id_divisionFK": 1,
+            "id_torneoFK": 1
+        }
+    ],
+    "torneo": [
+        {
+            "id": 1,
+            "nombre": "Torneo Apertura",
+            "fecha_inicio_insc": "2024-11-28",
+            "fecha_final_insc": "2024-11-30",
+            "fecha_inicio_torneo": "2024-12-1",
+            "fecha_final_torneo": "2025-02-20",
+            "dni_encargadoFK": 12345678,
+            "nombreEncargado": "Juan Pérez"
+        },
+        {
+            "id": 2,
+            "nombre": "Torneo Clausura",
+            "fecha_inicio_insc": "2024-11-28",
+            "fecha_final_insc": "2024-11-30",
+            "fecha_inicio_torneo": "2024-12-1",
+            "fecha_final_torneo": "2025-02-20",
+            "dni_encargadoFK": 87654321,
+            "nombreEncargado": "Maria Pérez"
+        }
+    ]
+}

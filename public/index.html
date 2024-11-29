@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torneo Resis</title>
+    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./tingle-master/src/tingle.css">
+
+</head>
+<body>
+    <header>
+        <a>Torneos Resis</a>
+        <nav>
+            <a href="registrar_equipo.html">Registrar equipo</a>
+            <a href="registrar_jugador.html">Registrar jugador</a>
+            <a href="index.html">Ver torneos</a>
+            <!-- <a href="ver_torneos.html">Visualizar torneos</a> -->
+        </nav>
+    </header>
+
+    <main>
+        <div class="panelContainer">
+            <button type="button" id="buttonNewTorneoModal" onclick="newModalImport()">Nuevo torneo</button>
+        </div>
+        <div class="panelContainer">
+            <h2>Lista de torneos</h2>
+            <ul id="listaTorneosActivos"></ul>
+        </div>
+    </main>
+    
+
+    <script src="./js/load_torneos.js"></script>
+    <script src="./tingle-master/src/tingle.js"></script>
+    <script src="./js/manage_modal_new_torneo.js"></script>
+</body>
+</html>
+

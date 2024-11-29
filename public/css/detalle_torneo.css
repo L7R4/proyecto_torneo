@@ -1,0 +1,25 @@
+.fixtureItemWrapper{
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+.fixtureItemWrapper>h2{
+    font-family: raleway-semibold;
+    font-size: clamp(2rem, 1.5vw, 2.5rem);
+    color: var(--fourth-color);
+}
+
+.fixtureItemWrapper > .itemInfo > h5{
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    color: var(--fourth-color);
+}
+
+.fixtureItemWrapper > .itemInfo >div> p{
+    background-color: var(--third-color);
+    padding: .5rem;
+    border-radius: .6;
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+    color: var(--fourth-color);
+}

@@ -1,0 +1,101 @@
+.wrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 85vh;
+}
+.form-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+}
+
+.form-container > h2 {
+    text-align: center;
+    font-family: raleway-semibold;
+    font-size: clamp(2.5rem, 1.6vw, 3rem);
+    color: var(--primary-color);
+}
+#registroJugadorForm{
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+/* Form group and label styles */
+.form-group {
+    width: 45%;
+    min-width: 20rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1vw, 1.6rem);
+    color: var(--primary-color);
+}
+
+/* Input styles */
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid var(--secundary-color);
+    background-color: #f9f9f9;
+    font-size: 14px;
+    color: var(--primary-color);
+}
+
+.form-group input:focus {
+    border-color: var(--third-color);
+    outline: none;
+    background-color: #fff;
+}
+
+/* Input file and file name display */
+.form-group input[type="file"] {
+    padding: 5px;
+}
+
+#file-name {
+    margin-left: 10px;
+    font-size: 14px;
+    color: var(--secundary-color);
+}
+
+/* Button styles */
+.form-button {
+    flex-basis: 100%;
+}
+
+button {
+    background-color: var(--secundary-color);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+button:hover:enabled {
+    background-color: var(--third-color);
+    box-shadow: 0px 0px 12px 3px rgba(49,81,30,0.3);
+
+}
+
+/* Focus and hover states */
+input:focus,
+button:focus {
+    box-shadow: 0 0 5px rgba(57, 88, 57, 0.7);
+}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torneo Resis</title>
+    <link rel="stylesheet" href="./css/detalle_torneo.css">
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./tingle-master/src/tingle.css">
+
+</head>
+<body>
+    
+    <header>
+        <a>Torneos Resis</a>
+        <nav>
+            <a href="registrar_equipo.html">Registrar equipo</a>
+            <a href="registrar_jugador.html">Registrar jugador</a>
+            <a href="index.html">Ver torneos</a>
+            <!-- <a href="ver_torneos.html">Visualizar torneos</a> -->
+        </nav>
+    </header>
+    
+
+    <main>
+        <div class="wrapperTorneo">
+            <h2 id="nameTorneo"></h2>
+            <div class="containerInfo">
+                <div class="itemInfo"> 
+                  <h5>Periodo de inscripcion</h5>
+                  <div>
+                  <p id="periodoInscripcion">2024-11-30 a 2025-03-15</p>
+                  </div>
+                </div>
+                <div class="itemInfo"> 
+                  <h5>Periodo de torneo</h5>
+                  <div>
+                  <p id="periodoTorneo">2024-11-30 a 2025-03-15</p>
+                  </div>
+                </div>
+                <div class="itemInfo"> 
+                  <h5>Encargado</h5>
+                  <div>
+                      <p id="encargadoName">Lautaro</p>
+                  </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="wrapperDetalleTorneo">
+            <div id="fixtureContainer" class="containerDetalleTorneo">
+                <h1>Fixtures</h1>
+                <ul id="listFixtures">
+                    <li>
+                        <div id="fixture_1" class="fixtureItemWrapper">
+                            <h2>Fixture Maxi A</h2>
+                            <div class="itemInfo"> 
+                                <h5><Ruedas></h5>
+                                <div>
+                                  <p>2</p>
+                                </div>
+                            </div>
+                            <div class="itemInfo"> 
+                                <h5>Fechas</h5>
+                                <div>
+                                    <p>-</p>
+                                </div>
+                            </div>
+                      </div>
+                    </li>
+                    <li>
+                        <h1>+ Agregar nuevo fixture</h1>
+                    </li>
+                </ul>
+            </div>
+    
+            <div id="panelTorneo" class="containerDetalleTorneo">
+                <button id="buttonNuevoEquipo"></button>
+    
+            </div>
+
+        </div>
+
+        
+
+        
+    </main>
+    
+
+    <script src="./js/load_detalle_torneo.js"></script>
+    <script src="./tingle-master/src/tingle.js"></script>
+    <script src="./js/manage_modal_new_torneo.js"></script>
+    <script src="./js/manageFixtures.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+main{
+    display: flex;
+    padding: 1rem;
+    height: 85vh;
+}
+
+main > .panelContainer{
+    padding: 1rem;
+    width: 65%;
+}
+
+
+.panelContainer:nth-child(1){
+    width: 35%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panelContainer:nth-child(1) > #buttonNewTorneoModal{
+   padding: 1.3rem;
+    border-radius: .6rem;
+    border-color: transparent;
+    background-color: var(--secundary-color);
+    color: var(--fourth-color);
+    font-family: raleway-bold;
+    font-size: clamp(1.7rem, 1.4vw, 2.5rem);
+    cursor:pointer;
+}
+
+.panelContainer:nth-child(1) > #buttonNewTorneoModal:hover{
+    box-shadow: 0px 0px 12px 4px rgba(49,81,30,0.3);
+
+}
+
+
+.panelContainer:nth-child(2) > h2{
+    font-family: raleway-semibold;
+    font-size: clamp(2.5rem, 2vw, 3.5rem);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Panel de lista de torneos */
+
+#listaTorneosActivos{
+    width: 80%;
+    margin: 0 auto;
+}
+
+#listaTorneosActivos > a.torneoItemWrapper{
+    text-decoration: none;
+    display: block;
+    padding: 1rem;
+    border-radius: .6rem;
+    background-color: var(--primary-color);
+    margin-bottom:1.5rem;
+}
+
+#listaTorneosActivos > a.torneoItemWrapper:hover{
+    box-shadow: 0px 0px 12px 3px rgba(26,26,25,0.4);
+    /* transform: scale(); */
+}
+#listaTorneosActivos > a.torneoItemWrapper > h2{
+    font-family: raleway-semibold;
+    font-size: clamp(2.3rem, 1.5vw, 2.8rem);
+    color: var(--fourth-color);
+    flex-basis: 100%;
+    margin-bottom: 1rem;
+}
+#listaTorneosActivos > a.torneoItemWrapper > .containerInfo{
+    display: flex;
+    gap: 2rem;
+}
+a.torneoItemWrapper > .containerInfo > .itemInfo > h5{
+    font-family: raleway-semibold;
+    font-size: clamp(1.4rem, 1.2vw, 1.7rem);
+    color: var(--third-color);
+}
+
+a.torneoItemWrapper > .containerInfo > .itemInfo > div > p{
+    padding: .4rem .8rem;
+    border-radius: .6rem;
+    background-color: var(--fourth-color);
+    font-family: raleway-semibold;
+    font-size: clamp(1.1rem, 1vw, 1.4rem);
+    color: var(--primary-color);
+}
