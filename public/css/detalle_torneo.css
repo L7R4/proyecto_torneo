@@ -215,3 +215,93 @@
     color: var(--primary-color);
     /* background-color: var(--fourth-color); */
 }
+#teamsContainer #btnInscribirEquipo{
+    padding: 1rem;
+    background-color: var(--primary-color);
+    color: var(--fourth-color);
+    border-radius: .6rem;
+    text-decoration: none;
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    outline: none;
+    border: none;
+    cursor: pointer;
+}
+
+#teamsContainer h2, #teamsContainer p{
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    text-align: center;
+}
+
+.tittleDisponibleTeams{
+    font-family: raleway-semibold;
+    font-size: clamp(2.5rem, 1.8vw, 3rem);
+    color: var(--third-color);
+}
+
+.listDisponibleTeams{
+    list-style: none;
+    margin-top:1.5rem;
+}
+
+.listDisponibleTeams > li{
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-family: raleway-semibold;
+    font-size: clamp(1.4rem, 1.2vw, 1.8rem);
+    color: var(--primary-color);
+}
+
+.listDisponibleTeams > li > button{
+    padding: .4rem 1rem;
+    border-radius: .6rem;
+    border-color: transparent;
+    background-color: var(--secundary-color);
+    color: var(--fourth-color);
+    font-family: raleway-bold;
+    font-size: clamp(1.4rem, 1.2vw, 1.8rem);
+    cursor: pointer;
+}
+#formInscribirEquipo{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+#formInscribirEquipo > div{
+    display: flex;
+    flex-direction: column;
+    width: 45%;
+    gap: .6rem;
+}
+
+
+#formInscribirEquipo label{
+    color: var(--primary-color);
+    font-family: raleway-bold;
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+}
+
+
+#formInscribirEquipo input{
+    width: 100%;
+    padding: .6rem;
+    border-radius: .6rem;
+    border: 1px solid var(--secundary-color);
+    background-color: #f9f9f9;
+    font-size: 12px;
+    color: var(--primary-color);
+
+}
+
+#formInscribirEquipo > button{
+    padding: .4rem 1rem;
+    border-radius: .6rem;
+    border-color: transparent;
+    background-color: var(--secundary-color);
+    color: var(--fourth-color);
+    font-family: raleway-bold;
+    font-size: clamp(1.4rem, 1.2vw, 1.8rem);
+    cursor: pointer;
+}

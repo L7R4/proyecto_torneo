@@ -175,11 +175,11 @@ async function openInscribirPopup(id_fixture) {
   if (response.ok) {
       const data = await response.json();
 
-      let content = `<h2>Equipos disponibles</h2>`;
+      let content = `<h2 class="tittleDisponibleTeams">Equipos disponibles</h2>`;
       if (data.equipos.length === 0) {
           content += `<p>No hay equipos disponibles para inscribir en este fixture.</p>`;
       } else {
-          content += `<ul>`;
+          content += `<ul class="listDisponibleTeams">`;
           data.equipos.forEach(team => {
               content += `
                   <li>
@@ -210,12 +210,18 @@ async function openInscribirPopup(id_fixture) {
 async function openInscribirForm(id_fixture, id_equipo) {
   // Crear formulario para capturar representante y DT
   const content = `
-      <h2>Inscribir equipo</h2>
+      <h2 class="tittleDisponibleTeams">Inscribir equipo</h2>
       <form id="formInscribirEquipo">
-          <label for="representante">Representante:</label>
+          <div>
+            <label for="representante">Representante:</label>
           <input type="text" id="representante" name="representante" required>
+          </div>
+          <div>
           <label for="dt">DT:</label>
           <input type="text" id="dt" name="dt" required>
+          
+          </div>
+          
           <button type="button" onclick="submitInscripcion(${id_fixture}, ${id_equipo})">Confirmar inscripción</button>
       </form>
   `;
