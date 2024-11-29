@@ -222,7 +222,7 @@ async function openInscribirForm(id_fixture, id_equipo) {
           
           </div>
           
-          <button type="button" onclick="submitInscripcion(${id_fixture}, ${id_equipo})">Confirmar inscripción</button>
+          <button type="button" id="" onclick="submitInscripcion(${id_fixture}, ${id_equipo})">Confirmar inscripción</button>
       </form>
   `;
 
