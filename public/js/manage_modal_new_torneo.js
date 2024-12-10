@@ -1,25 +1,11 @@
 async function renderFormNewTorneo() {
-    const response = await fetch('/encargados');
-    const data = await response.json();
-
-    const options = data.map(encargado => {
-        return `<option value="${encargado.dni}">${encargado.nombre}</option>`;
-    }).join("");
-
     return `
     <div id="formNewTorneoContainer">
         <h2 class="tittleModal">Registrar nuevo torneo</h2>
         <form id="registerTorneoForm">
             <div class="inputWrapper">
                 <label class="labelInput">Nombre del torneo</label>
-                <input type="text" name="nombre" class="inputCheck" placeholder="Ej. Torneo Gaona" />
-            </div>
-            <div class="inputWrapper">
-                <label for="encargado">Categoría:</label>
-                <select id="encargado" name="encargado" required>
-                    <option value="" disabled selected>Seleccionar categoría</option>
-                    ${options}
-                </select>
+                <input type="text" name="nombre" class="inputCheck" placeholder="Ej. Torneo" />
             </div>
             <div class="inputWrapper">
                 <label class="labelInput">Periodo de inscripción</label>
@@ -55,7 +41,6 @@ async function newModalImport() {
 
     // Add a button
     modal.addFooterBtn('Guardar', 'tingle-btn tingle-btn--primary', async function () {
-        console.log("Formulario enviado");
 
         // Obtener los datos del formulario
         const formData = new FormData(document.getElementById('registerTorneoForm'));
@@ -65,7 +50,6 @@ async function newModalImport() {
             fecha_final_insc: formData.get('insc_final_date'),
             fecha_inicio_torneo: formData.get('torneo_inicio_date'),
             fecha_final_torneo: formData.get('torneo_final_date'),
-            dni_encargadoFK: formData.get('encargado')
         };
         console.log('Body de la solicitud:', body);
 

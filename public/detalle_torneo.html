@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +10,9 @@
     <link rel="stylesheet" href="./tingle-master/src/tingle.css">
 
 </head>
+
 <body>
-    
+
     <header>
         <a>Torneos Resis</a>
         <nav>
@@ -20,31 +22,24 @@
             <!-- <a href="ver_torneos.html">Visualizar torneos</a> -->
         </nav>
     </header>
-    
+
 
     <main>
         <div class="wrapperTorneo">
             <h2 id="nameTorneo"></h2>
             <div class="containerInfo">
-                <div class="itemInfo"> 
-                  <h5>Periodo de inscripcion</h5>
-                  <div>
-                  <p id="periodoInscripcion"></p>
-                  </div>
+                <div class="itemInfo">
+                    <h5>Periodo de inscripcion</h5>
+                    <div>
+                        <p id="periodoInscripcion"></p>
+                    </div>
                 </div>
-                <div class="itemInfo"> 
-                  <h5>Periodo de torneo</h5>
-                  <div>
-                  <p id="periodoTorneo"></p>
-                  </div>
+                <div class="itemInfo">
+                    <h5>Periodo de torneo</h5>
+                    <div>
+                        <p id="periodoTorneo"></p>
+                    </div>
                 </div>
-                <div class="itemInfo"> 
-                  <h5>Encargado</h5>
-                  <div>
-                      <p id="encargadoName"></p>
-                  </div>
-                </div>
-
             </div>
 
         </div>
@@ -54,30 +49,32 @@
                 <h1>Fixtures</h1>
                 <ul id="listFixtures">
                     <li>
-                        <button type="button" id="buttonNewFixture" onclick="createFormNewFixture()">+ Agregar fixture</button>
+                        <button type="button" id="buttonNewFixture" onclick="createFormNewFixture()">+ Agregar
+                            fixture</button>
                     </li>
                 </ul>
             </div>
             <div id="teamsContainer" class="containerDetalleTorneo">
-                
+
             </div>
             <div id="jugadoresContainer" class="containerDetalleTorneo">
-    
+                <ul></ul>
             </div>
         </div>
-        
-        <div class="wrapperConfirmTorneo"> 
-            
-        </div>
-        
 
-        
+        <div class="wrapperConfirmTorneo">
+
+        </div>
+
+
+
     </main>
-    
+
 
     <script src="./js/load_detalle_torneo.js"></script>
     <script src="./tingle-master/src/tingle.js"></script>
     <script src="./js/manage_modal_new_torneo.js"></script>
     <script src="./js/manageFixtures.js"></script>
 </body>
+
 </html>

@@ -1,8 +1,3 @@
-// document.getElementById('jugador-foto').addEventListener('change', function(e) {
-//     const fileName = e.target.files[0] ? e.target.files[0].name : 'Ningún archivo seleccionado';
-//     document.getElementById('file-name').textContent = fileName;
-// });
-
 document.getElementById('jugador-fec_nac').addEventListener('input', function () {
     const fechaNacimiento = this.value;
     const fecha = fechaNacimiento.split('/');
@@ -15,19 +10,12 @@ document.getElementById('jugador-fec_nac').addEventListener('input', function ()
         const fechaNacimientoObj = new Date(anio, mes, dia);
         const edad = calcularEdad(fechaNacimientoObj);
 
-        let categoria = '';
-        if (edad >= 41 && edad <= 45) {
-            categoria = '1'; // ID de categoría para Maxi
-        } else if (edad >= 46 && edad <= 50) {
-            categoria = '2'; // ID de categoría para Super
-        } else if (edad >= 51 && edad <= 55) {
-            categoria = '3'; // ID de categoría para Master
-        }
+        let categoria = obtenerCategoriaPorEdad(edad);
 
         // Actualizar el valor del <select> si se encontró una categoría válida
-        const categorySelect = document.getElementById('category');
+        const categorySelect = document.getElementById('category_select');
         if (categoria) {
-            categorySelect.value = categoria;
+            categorySelect.value = categoria.id_categoria;
             document.getElementById('submit-btn').disabled = false;
         } else {
             categorySelect.value = ''; // Resetear el valor si no hay categoría válida
@@ -46,13 +34,26 @@ function calcularEdad(fechaNacimiento) {
     return edad;
 }
 
+let dataCategorias = []; // Inicializamos la variable
+
 document.addEventListener("DOMContentLoaded", async () => {
     const form = document.getElementById("registroJugadorForm");
     const submitButton = document.getElementById("submit-btn");
     const fileInput = document.getElementById("jugador-foto");
     const fileNameDisplay = document.getElementById("file-name");
 
-    // Habilitar el botón de envío solo si todos los campos están completos
+    // Obtener las categorías disponibles
+    const responseCategorias = await fetch('/categorias');
+    dataCategorias = await responseCategorias.json();
+
+    // Obtener los equipos disponibles
+    const responseEquipos = await fetch('/equipos');
+    const dataEquipos = await responseEquipos.json();
+
+    // Llenar los selects
+    rellenarSelects_Equipos_Categorias(dataCategorias, dataEquipos);
+
+    // Lógica de habilitar botón
     form.addEventListener("input", () => {
         const isFormValid = form.checkValidity();
         submitButton.disabled = !isFormValid;
@@ -65,17 +66,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             dni: parseInt(document.getElementById("jugador-dni").value),
             nombre: document.getElementById("jugador-name").value,
             apellido: document.getElementById("jugador-apellido").value,
-            fecha_nac: document.getElementById("jugador-fec_nac").value,
-            direcc: document.getElementById("jugador-direcc").value,
+            fec_nac: document.getElementById("jugador-fec_nac").value,
+            domic: document.getElementById("jugador-direcc").value,
             foto: fileInput.files[0]?.name || '', // Enviar solo el nombre del archivo
-            id_categoriaFK: parseInt(document.getElementById("category").value),
-            num_equipoFK: parseInt(document.getElementById("equipo").value)
+            id_categoriaFK: parseInt(document.getElementById("category_select").value),
+            num_equipoFK: parseInt(document.getElementById("equipo_select").value)
         };
 
-        console.log(requestData)
-
         try {
-            // Realizar la petición POST
             const response = await fetch("/create_jugador", {
                 method: "POST",
                 headers: {
@@ -84,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 body: JSON.stringify(requestData),
             });
 
-            // Verificar la respuesta del servidor
             if (response.ok) {
                 const result = await response.json();
                 alert(`Jugador registrado exitosamente. ID: ${result.id}`);
@@ -100,25 +97,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             alert("Ocurrió un error al intentar registrar el jugador. Por favor, inténtalo nuevamente.");
         }
     });
-
-    const response = await fetch('/equipos')
-    const data = await response.json();
-
-    // Mostrar los usuarios en el navegador
-    data.forEach(team => {
-        createItemEquipo_HTML(team["num_equipo"],team["nombre"])
-    });
 });
 
+function rellenarSelects_Equipos_Categorias(categorias, equipos) {
+    const equipo_select = document.querySelector("#equipo_select");
+    const categoria_select = document.querySelector("#category_select");
 
-function createItemEquipo_HTML(id,nombre) {
-    const selectWrapperEquipo = document.getElementById("equipo")
-    let stringForHTML =
-      `
-      <option value="${id}">${nombre}</option>
-  `
-  selectWrapperEquipo.insertAdjacentHTML('beforeend', stringForHTML);
+    categorias.forEach(element => {
+        const option = `<option value="${element.id_categoria}">${element.nombre}</option>`;
+        categoria_select.insertAdjacentHTML("beforeend", option);
+    });
 
+    equipos.forEach(element => {
+        const option = `<option value="${element.num_equipo}">${element.nombre}</option>`;
+        equipo_select.insertAdjacentHTML("beforeend", option);
+    });
 }
 
-
+function obtenerCategoriaPorEdad(edad) {
+    return dataCategorias.find(categoria => edad >= categoria.edad_min && edad <= categoria.edad_max) || null;
+}

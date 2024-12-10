@@ -13,30 +13,76 @@ const app = express();
 
 app.use(express.static('public'));
 
-// db.run("PRAGMA journal_mode=WAL;");
-
 
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Para datos de formularios
 
 
-// Endpoint para registrar jugador
-app.post('/create_jugador', (req, res) => {
-    const { dni, nombre, apellido, fecha_nac, direcc, foto,  id_categoriaFK, num_equipoFK } = req.body;
+// #region Endpoint para obtener las categorias disponibles
+app.get('/categorias', (req, res) => {
+    try {
+        // Consulta para obtener los equipos por categoría y división
+        const cagetoriasConsult = db.prepare(`
+            SELECT * FROM categoria
+        `);
+        const categorias = cagetoriasConsult.all();
 
-    if (!dni || !nombre || !apellido || !fecha_nac || !direcc || !foto || !id_categoriaFK || !num_equipoFK) {
+        // Si no se encuentran equipos
+        if (categorias.length === 0) {
+            return res.status(404).json({ message: 'No existen categorias' });
+        }
+
+        // Devolver los equipos encontrados
+        res.json(categorias);
+    } catch (error) {
+        console.error('Error al obtener las categorias:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener las categorias' });
+    }
+});
+// #endregion
+
+
+// #region Endpoint para obtener las divisiones disponibles
+app.get('/divisiones', (req, res) => {
+    try {
+        // Consulta para obtener los equipos por categoría y división
+        const divisionesConsult = db.prepare(`
+            SELECT * FROM division
+        `);
+        const divisiones = divisionesConsult.all();
+
+        // Si no se encuentran equipos
+        if (divisiones.length === 0) {
+            return res.status(404).json({ message: 'No existen divisiones' });
+        }
+
+        // Devolver los equipos encontrados
+        res.json(divisiones);
+    } catch (error) {
+        console.error('Error al obtener las divisiones:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener las divisiones' });
+    }
+});
+// #endregion
+
+
+//#region Endpoint para registrar jugador
+app.post('/create_jugador', (req, res) => {
+    const { dni, nombre, apellido, fec_nac, domic, foto, id_categoriaFK, num_equipoFK } = req.body;
+
+    if (!dni || !nombre || !apellido || !fec_nac || !domic || !foto || !id_categoriaFK || !num_equipoFK) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
     try {
-        
+
         const insertarJugador = db.prepare(`
-            INSERT INTO jugador (dni, nombre, apellido, fecha_nac, direcc, foto, id_categoriaFK, num_equipoFK)
+            INSERT INTO jugador (dni, nombre, apellido, fec_nac, domic, foto, id_categoriaFK, num_equipoFK)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
-        const resultado = insertarJugador.run(dni, nombre, apellido, fecha_nac, direcc, foto, id_categoriaFK, num_equipoFK);
+        const resultado = insertarJugador.run(dni, nombre, apellido, fec_nac, domic, foto, id_categoriaFK, num_equipoFK);
 
         res.json({ message: 'Usuario registrado exitosamente', id: resultado.lastInsertRowid });
     } catch (error) {
@@ -45,8 +91,11 @@ app.post('/create_jugador', (req, res) => {
     }
 });
 
-// Endpoint para registrar equipo
-app.post('/equipo', (req, res) => {
+// #endregion
+
+
+//#region Endpoint para registrar equipo
+app.post('/equipo/crear_equipo', (req, res) => {
     const { nombre, id_categoriaFK, id_divisionFK } = req.body;
 
     // Validar que los datos requeridos estén presentes
@@ -70,8 +119,10 @@ app.post('/equipo', (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al registrar el equipo' });
     }
 });
+// #endregion
 
-// Endpoint para traer jugadores por categoria
+
+//#region Endpoint para traer jugadores por categoria
 app.get('/jugadores/categoria/:id_categoriaFK', (req, res) => {
     const { id_categoriaFK } = req.params;
 
@@ -94,28 +145,10 @@ app.get('/jugadores/categoria/:id_categoriaFK', (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al obtener los jugadores' });
     }
 });
+// #endregion
 
-app.get('/encargados', (req, res) => {
-    try {
-        // Consulta para obtener los equipos por categoría y división
-        const consultaEncargados = db.prepare(`
-            SELECT * FROM encargado
-        `);
-        const encargados = consultaEncargados.all();
-        // Si no se encuentran equipos
-        if (encargados.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron encargados' });
-        }
 
-        // Devolver los equipos encontrados
-        res.json(encargados);
-    } catch (error) {
-        console.error('Error al obtener encargados:', error.message);
-        res.status(500).json({ error: 'Ocurrió un error al obtener los encargados' });
-    }
-});
-
-// Endpoint para traer los equipos
+//#region Endpoint para traer los equipos
 app.get('/equipos', (req, res) => {
     try {
         // Consulta para obtener los equipos por categoría y división
@@ -123,6 +156,7 @@ app.get('/equipos', (req, res) => {
             SELECT * FROM equipo
         `);
         const equipos = consultaEquipos.all();
+
         // Si no se encuentran equipos
         if (equipos.length === 0) {
             return res.status(404).json({ message: 'No se encontraron equipos para esta categoría y división' });
@@ -135,23 +169,16 @@ app.get('/equipos', (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al obtener los equipos' });
     }
 });
+// #endregion
 
 
+// #region Endpoint para traer los torneos
 app.get('/torneos', (req, res) => {
     try {
-        // Consulta para obtener los torneos con el nombre del encargado
         const torneosConsultas = db.prepare(`
-            SELECT 
-                torneo.id_torneo, 
-                torneo.nombre, 
-                torneo.fecha_inicio_insc, 
-                torneo.fecha_final_insc, 
-                torneo.fecha_inicio_torneo, 
-                torneo.fecha_final_torneo, 
-                encargado.nombre AS nombreEncargado
-            FROM torneo
-            JOIN encargado ON torneo.dni_encargadoFK = encargado.dni
+            SELECT * FROM torneo
         `);
+
         const torneos = torneosConsultas.all();
         console.log(torneos)
         // Si no se encuentran torneos
@@ -167,18 +194,22 @@ app.get('/torneos', (req, res) => {
     }
 });
 
+// #endregion
 
+
+// #region Endpoint para crear torneos
 app.post('/create_torneos', (req, res) => {
     try {
         // Obtener los datos del torneo desde el cuerpo de la solicitud
-        const { nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo, dni_encargadoFK} = req.body;
+        const { nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo } = req.body;
         console.log('Datos recibidos:', req.body);
+
         // Insertar el nuevo torneo en la base de datos
         const insertTorneo = db.prepare(`
-            INSERT INTO torneo (nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo, dni_encargadoFK)
-            VALUES (?, ?, ?, ?, ?,?)
+            INSERT INTO torneo (nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo)
+            VALUES (?, ?, ?, ?, ?)
         `);
-        const result = insertTorneo.run(nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo,dni_encargadoFK);
+        const result = insertTorneo.run(nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo);
 
         // Obtener el ID del torneo recién creado
         const newTorneoId = result.lastInsertRowid;
@@ -190,23 +221,18 @@ app.post('/create_torneos', (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al crear el torneo' });
     }
 });
+// #endregion
 
+
+// #region Endpoint para obtener un torneo en especifico
 app.get('/torneo/:id', (req, res) => {
     const torneoId = req.params.id;
 
     // Buscar el torneo en la base de datos usando el ID
     const torneo = db.prepare(`
-        SELECT 
-                torneo.id_torneo, 
-                torneo.nombre, 
-                torneo.fecha_inicio_insc, 
-                torneo.fecha_final_insc, 
-                torneo.fecha_inicio_torneo, 
-                torneo.fecha_final_torneo, 
-                encargado.nombre AS nombreEncargado
-            FROM torneo
-            JOIN encargado ON torneo.dni_encargadoFK = encargado.dni
-            WHERE torneo.id_torneo = ?
+        SELECT *
+        FROM torneo
+        WHERE torneo.id_torneo = ?
     `).get(torneoId);
 
     if (torneo) {
@@ -215,7 +241,10 @@ app.get('/torneo/:id', (req, res) => {
         res.status(404).json({ error: "Torneo no encontrado" });
     }
 });
+// #endregion
 
+
+// #region Endpoint para obtener las fixtures de un torneo
 app.get('/torneo/:id/fixtures', (req, res) => {
     const torneoId = req.params.id;
 
@@ -224,46 +253,89 @@ app.get('/torneo/:id/fixtures', (req, res) => {
         SELECT 
             f.*, 
             c.nombre AS categoria, 
-            d.nombre AS division
-        FROM fixture f
-        JOIN categoria c ON f.id_categoriaFK = c.id_categoria
-        JOIN division d ON f.id_divisionFK = d.id_division
-        WHERE f.id_torneoFK = ?
+            d.nombre AS division, 
+            COUNT(r.id_fixtureFK) AS cantidadRuedas
+        FROM 
+            fixture f
+        JOIN 
+            categoria c ON f.id_categoriaFK = c.id_categoria
+        JOIN 
+            division d ON f.id_divisionFK = d.id_division
+        LEFT JOIN 
+            rueda r ON r.id_fixtureFK = f.id_fixture
+        WHERE 
+            f.id_torneoFK = ?
+        GROUP BY 
+            f.id_fixture, c.nombre, d.nombre;
     `).all(torneoId);
-
     if (fixtures.length > 0) {
         res.json({ fixtures });
+        console.log(fixtures)
+
     } else {
         res.status(404).json({ error: "No se encontraron fixtures para este torneo" });
     }
 });
+// #endregion
 
-// Endpoint para traer jugadores por categoria y division
+
+//#region Endpoint para traer jugadores por categoria y division
 app.get('/equipos/categoria/:id_categoriaFK/:id_divisionFK', (req, res) => {
     const { id_categoriaFK, id_divisionFK } = req.params;
 
     try {
-        // Consulta para obtener los equipos por categoría y división
-        const consultaEquipos = db.prepare(`
-            SELECT * FROM equipo WHERE id_categoriaFK = ? AND id_divisionFK = ?
+        const consultaJugadores = db.prepare(`
+            SELECT * 
+            FROM equipo 
+            WHERE id_categoriaFK = ? AND id_divisionFK = ?
         `);
-        const equipos = consultaEquipos.all(id_categoriaFK, id_divisionFK);
+        const jugadores = consultaJugadores.all(id_categoriaFK, id_divisionFK);
 
         // Si no se encuentran equipos
-        if (equipos.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron equipos para esta categoría y división' });
+        if (jugadores.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron jugadores para esta categoría y división' });
         }
 
-        // Devolver los equipos encontrados
-        res.json(equipos);
+        // Devolver los jugadores encontrados
+        res.json(jugadores);
     } catch (error) {
-        console.error('Error al obtener equipos:', error.message);
-        res.status(500).json({ error: 'Ocurrió un error al obtener los equipos' });
+        console.error('Error al obtener jugadores:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener los jugadores' });
     }
 });
+// #endregion
 
-app.post('/fixture', (req, res) => {
-    const { cantidad_ruedas, id_categoriaFK, id_divisionFK,id_torneoFK } = req.body;
+
+//#region Endpoint para traer jugadores por equipo asociado
+app.post('/jugadores/por_equipo', (req, res) => {
+    const { id_equipo } = req.body;
+    console.log("esad")
+    try {
+        const consultaJugadores = db.prepare(`
+            SELECT * 
+            FROM jugador 
+            WHERE num_equipoFK = ?
+        `);
+        const jugadores = consultaJugadores.all(id_equipo);
+
+        // Si no se encuentran equipos
+        if (jugadores.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron jugadores de este equipo asociados' });
+        }
+
+        // Devolver los jugadores encontrados
+        res.json(jugadores);
+    } catch (error) {
+        console.error('Error al obtener jugadores:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener los jugadores' });
+    }
+});
+// #endregion
+
+
+// #region Endpoint para crear fixtures y ruedas
+app.post('/fixtures/crear', (req, res) => {
+    const { cantidad_ruedas, id_categoriaFK, id_divisionFK, id_torneoFK } = req.body;
 
     // Validar que los campos requeridos estén presentes
     if (!cantidad_ruedas || !id_categoriaFK || !id_divisionFK || !id_torneoFK) {
@@ -273,11 +345,12 @@ app.post('/fixture', (req, res) => {
     try {
         // Insertar el nuevo fixture en la base de datos
         const insertarFixture = db.prepare(`
-            INSERT INTO fixture (cantidad_ruedas, id_categoriaFK, id_divisionFK,id_torneoFK)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO fixture (id_categoriaFK, id_divisionFK,id_torneoFK)
+            VALUES (?, ?, ?)
         `);
-        const resultadoFixture = insertarFixture.run(cantidad_ruedas, id_categoriaFK, id_divisionFK, id_torneoFK);
+        const resultadoFixture = insertarFixture.run(id_categoriaFK, id_divisionFK, id_torneoFK);
 
+        // Obtener los datos nuevamente para luego enviarlos y actualizarlos en el Front
         const obtenerDatos = db.prepare(
             `
             SELECT c.nombre AS categoria, d.nombre AS division
@@ -287,8 +360,10 @@ app.post('/fixture', (req, res) => {
             WHERE f.id_fixture = ?
         `
         );
-        const datosFixture = obtenerDatos.get(resultadoFixture.lastInsertRowid);
-        console.log(datosFixture)
+        const datosFixture = obtenerDatos.get(resultadoFixture.lastInsertRowid); // Se obtiene la ultima fixture agregada
+
+        crearRuedas(resultadoFixture.lastInsertRowid, cantidad_ruedas) // Luego generamos la rueda a traves del ID del nuevo fixture
+
         // Devolver una respuesta con el ID del fixture insertado, junto con el nombre de la categoría y la división
         res.json({
             message: 'Fixture creado exitosamente',
@@ -303,9 +378,76 @@ app.post('/fixture', (req, res) => {
 });
 
 
+// Funcion para insertar la rueda de una determinada fixture en la base de datos
+function crearRuedas(id_fixture, cantidad_ruedas) {
+    for (let i = 1; i <= cantidad_ruedas; i++) {
+        try {
+            const generarRueda = db.prepare(`
+                INSERT INTO rueda (numero, id_fixtureFK)
+                VALUES (?, ?)
+            `);
+            generarRueda.run(i, id_fixture);
+        } catch (error) {
+            console.error('Error al crear la rueda:', error.message);
+            res.status(500).json({ error: 'Ocurrió un error al generar las ruedas' });
+        }
+    }
+}
 
-// Endpoint para actualizar el fixture y calcular la fecha
-app.put('/fixture/:id', (req, res) => {
+// #endregion
+
+
+// #region Enpoint para eliminar fixture
+app.delete('/fixtures/delete_fixture', (req, res) => {
+    const { id_fixture } = req.body;
+
+    try {
+        // Obtener la categoría y división del fixture a eliminar
+        const fixtureInfo = db.prepare(`
+        SELECT id_categoriaFK, id_divisionFK 
+        FROM fixture 
+        WHERE id_fixture = ?
+      `).get(id_fixture);
+
+
+        const { id_categoriaFK, id_divisionFK } = fixtureInfo;
+
+        // Eliminar equipos inscritos en el torneo con la misma categoría y división
+        const eliminarEquipos = db.prepare(`
+        DELETE FROM inscribeEquipo
+        WHERE id_torneoPKFK IN (
+          SELECT id_torneoFK 
+          FROM fixture 
+          WHERE id_categoriaFK = ? AND id_divisionFK = ?
+        )
+      `).run(id_categoriaFK, id_divisionFK);
+
+
+
+        // Eliminar ruedas relacionadas con el fixture
+        db.prepare(`
+            DELETE FROM rueda 
+            WHERE id_fixtureFK = ?
+        `).run(id_fixture);
+
+
+        // Eliminar el fixture
+        const eliminarFixture = db.prepare(`
+        DELETE FROM fixture 
+        WHERE id_fixture = ?
+        `).run(id_fixture);
+
+        res.json({ message: "Fixture y equipos relacionados eliminados exitosamente." });
+    } catch (error) {
+        console.error("Error al eliminar fixture:", error.message);
+        res.status(500).json({ error: "Ocurrió un error al eliminar el fixture." });
+    }
+});
+// #endregion
+
+
+//#region Endpoint para actualizar el fixture y calcular la fecha
+app.put('fixtures/fixture/:id', (req, res) => {
     const { id } = req.params; // ID del fixture que se va a actualizar
     const { rueda, id_categoriaFK, id_divisionFK } = req.body;
 
@@ -352,6 +494,51 @@ app.put('/fixture/:id', (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al actualizar el fixture' });
     }
 });
+
+// #endregion
+
+
+// #region Para inscribir jugadores al torneo
+
+app.post('/torneos/inscripcion_jugador', (req, res) => {
+    const { num_socio, id_torneo } = req.body;
+
+    try {
+        const inscribirJugador = db.prepare(`
+            INSERT INTO inscribeJugador (id_jugadorPKFK, id_torneoPKFK) 
+            VALUES (?, ?)
+        `);
+        inscribirJugador.run(num_socio, id_torneo);
+
+        res.json({ message: "Jugador inscrito exitosamente." });
+    } catch (error) {
+        console.error("Error al inscribir jugador:", error.message);
+        res.status(500).json({ error: "Ocurrió un error al inscribir al jugador." });
+    }
+});
+
+// #endregion
+
+
+// #region Para desinscribir jugadores al torneo
+app.delete('/torneos/inscripcion_jugador', (req, res) => {
+    const { num_socio, id_torneo } = req.body;
+
+    try {
+        const desinscribirJugador = db.prepare(`
+            DELETE FROM inscribeJugador 
+            WHERE id_jugadorPKFK = ? AND id_torneoPKFK = ?
+        `);
+        desinscribirJugador.run(num_socio, id_torneo);
+
+        res.json({ message: "Jugador desinscrito exitosamente." });
+    } catch (error) {
+        console.error("Error al desinscribir jugador:", error.message);
+        res.status(500).json({ error: "Ocurrió un error al desinscribir al jugador." });
+    }
+});
+
+// #endregion
 
 app.get('/equipos-inscritos-fixture/:id_fixture', (req, res) => {
     const { id_fixture } = req.params; // Usamos req.params para obtener el id del fixture.
