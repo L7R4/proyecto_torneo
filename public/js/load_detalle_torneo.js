@@ -449,6 +449,7 @@ function listenerObtenerJugadoresPorEquipo() {
   });
 }
 
+
 async function handleGetPlayers(id_equipo) {
 
   try {
@@ -475,6 +476,7 @@ async function handleGetPlayers(id_equipo) {
 
 }
 
+
 // Mostrar los jugadores en un UL
 function mostrarJugadores(jugadores) {
   const jugadoresContainer = document.querySelector("#jugadoresContainer > ul");
@@ -499,6 +501,7 @@ function mostrarJugadores(jugadores) {
   // Configurar los listeners para los checkboxes
   setupCheckboxListeners();
 }
+
 
 // Configurar listeners para los checkboxes de inscripción
 function setupCheckboxListeners() {
@@ -542,7 +545,5 @@ function setupCheckboxListeners() {
     });
   });
 }
-
-
 
 // #endregion
