@@ -498,7 +498,7 @@ app.put('fixtures/fixture/:id', (req, res) => {
 // #endregion
 
 
-// #region Para inscribir jugadores al torneo
+// #region Endpoint Para inscribir jugadores al torneo
 
 app.post('/torneos/inscripcion_jugador', (req, res) => {
     const { num_socio, id_torneo } = req.body;
@@ -520,7 +520,7 @@ app.post('/torneos/inscripcion_jugador', (req, res) => {
 // #endregion
 
 
-// #region Para desinscribir jugadores al torneo
+// #region Endpoint Para desinscribir jugadores al torneo
 app.delete('/torneos/inscripcion_jugador', (req, res) => {
     const { num_socio, id_torneo } = req.body;
 
@@ -539,6 +539,8 @@ app.delete('/torneos/inscripcion_jugador', (req, res) => {
 });
 
 // #endregion
+
+
 
 app.get('/equipos-inscritos-fixture/:id_fixture', (req, res) => {
     const { id_fixture } = req.params; // Usamos req.params para obtener el id del fixture.
@@ -676,18 +678,15 @@ app.post('/inscribir-equipo', (req, res) => {
 
 
 
+// #region Endpoint para calcular fechas y generar encuentros de los equipos
 
 app.post('/generar-encuentros', (req, res) => {
     const { id_fixtureFK } = req.body;
 
-    if (!id_fixtureFK) {
-        return res.status(400).json({ error: 'El ID del fixture es obligatorio' });
-    }
-
     try {
         // Obtener datos del fixture
         const consultaFixture = db.prepare(`
-            SELECT fechas, id_categoriaFK, id_divisionFK, rueda
+            SELECT cantidad_fechas, id_categoriaFK, id_divisionFK
             FROM Fixture
             WHERE id_fixture = ?
         `);
@@ -697,21 +696,23 @@ app.post('/generar-encuentros', (req, res) => {
             return res.status(404).json({ message: 'No se encontró el fixture especificado' });
         }
 
-        const { fechas, id_categoriaFK, id_divisionFK, rueda } = fixture;
+        const { cantidad_fechas, id_categoriaFK, id_divisionFK } = fixture;
 
         // Obtener equipos inscriptos en el torneo
         const consultaEquipos = db.prepare(`
             SELECT num_equipoFK, nombre
-            FROM InscribeEquipo IE
-            JOIN Equipo E ON IE.num_equipoFK = E.num_equipo
-            JOIN Torneo T ON IE.id_torneoFK = T.id_torneo
-            WHERE T.id_categoriaFK = ? AND T.id_divisionFK = ?
+            FROM inscribeEquipo ie
+            JOIN equipo e ON ie.num_equipoPKFK = e.num_equipo
+            JOIN torneo t ON ie.id_torneoPKFK = t.id_torneo
+            WHERE t.id_categoriaFK = ? AND t.id_divisionFK = ?
         `);
         const equipos = consultaEquipos.all(id_categoriaFK, id_divisionFK);
 
         if (equipos.length === 0) {
             return res.status(404).json({ message: 'No hay equipos inscriptos en esta categoría y división' });
         }
+
+        const encuentros = generarEncuentros(equipos);
 
         // Generar encuentros para cada fecha y rueda
         const insertarEncuentro = db.prepare(`
@@ -727,7 +728,7 @@ app.post('/generar-encuentros', (req, res) => {
         const jsonEncuentros = [];
 
         for (let r = 1; r <= rueda; r++) { // Para cada rueda
-            const combinaciones = generarCombinaciones(equipos);
+            const combinaciones = generarEncuentros(equipos);
 
             const ruedaData = {
                 rueda: r,
@@ -776,6 +777,9 @@ app.post('/generar-encuentros', (req, res) => {
     }
 });
 
+// #endregion
+
+
 //Asignar fechas al Encuentro
 app.post('/asignar_fecha', (req, res) => {
     const { id_encuentro, dia, hora } = req.body;
@@ -806,17 +810,41 @@ app.post('/asignar_fecha', (req, res) => {
 });
 
 // Función para generar combinaciones de equipos
-function generarCombinaciones(equipos) {
-    const combinaciones = [];
-    const numEquipos = equipos.length;
+function generarEncuentros(equipos) {
+    const totalFechas = equipos.length - 1; // Cantidad de fechas
+    const totalEquipos = equipos.length;
 
-    for (let i = 0; i < numEquipos; i++) {
-        for (let j = i + 1; j < numEquipos; j++) {
-            combinaciones.push([equipos[i], equipos[j]]);
-        }
+    if (totalEquipos % 2 !== 0) {
+        // Añadir un equipo ficticio si el número de equipos es impar
+        equipos.push("Descansa");
     }
-    return combinaciones;
+
+    const fechas = [];
+
+    for (let i = 0; i < totalFechas; i++) {
+        const fecha = [];
+
+        for (let j = 0; j < totalEquipos / 2; j++) {
+            // Emparejar el primer equipo con el último, segundo con penúltimo, etc.
+            const equipo1 = equipos[j];
+            const equipo2 = equipos[totalEquipos - 1 - j];
+
+            if (equipo1 !== "Descansa" && equipo2 !== "Descansa") {
+                fecha.push([equipo1, equipo2]);
+            }
+        }
+
+        fechas.push(fecha);
+
+        // Rotar equipos para la siguiente fecha
+        const rotar = equipos.splice(1, 1); // Extrae el segundo equipo
+        equipos.push(...rotar); // Añádelo al final
+    }
+
+    return fechas;
 }
+
+
 // crea una cancha nueva
 app.post('/registrar_cancha', (req, res) => {
     const { nombre, direcc } = req.body;
