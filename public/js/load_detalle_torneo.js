@@ -65,7 +65,6 @@ async function loadFixtures(tournamentId) {
     });
 
     let fixturesHTML = document.querySelectorAll('#listFixtures > li.i_fix');
-    console.log(fixturesHTML)
     fixturesHTML.forEach(element => {
       const id_fixture = element.querySelector(".fixtureItemWrapper").id.split("_")[1];
       element.addEventListener("click", () => showTeams(id_fixture));
@@ -550,49 +549,79 @@ function setupCheckboxListeners() {
 // #endregion
 
 
-function generarEncuentros(equipos) {
-  const totalFechas = equipos.length - 1; // Cantidad de fechas
-  const totalEquipos = equipos.length;
 
-  if (totalEquipos % 2 !== 0) {
-    // Añadir un equipo ficticio si el número de equipos es impar
-    equipos.push("Descansa");
-  }
 
-  const fechas = [];
+async function comenzarTorneo() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tournamentId = urlParams.get('id');
 
-  for (let i = 0; i < totalFechas; i++) {
-    const fecha = [];
+    // Hacer una petición para obtener los jugadores del equipo seleccionado
+    const response = await fetch('/comenzar-torneo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id_torneo: tournamentId })
+    });
 
-    for (let j = 0; j < totalEquipos / 2; j++) {
-      // Emparejar el primer equipo con el último, segundo con penúltimo, etc.
-      const equipo1 = equipos[j];
-      const equipo2 = equipos[totalEquipos - 1 - j];
-
-      if (equipo1 !== "Descansa" && equipo2 !== "Descansa") {
-        fecha.push([equipo1, equipo2]);
-      }
+    if (!response.ok) {
+      throw new Error('Error.');
     }
 
-    fechas.push(fecha);
-
-    // Rotar equipos para la siguiente fecha
-    const rotar = equipos.splice(1, 1); // Extrae el segundo equipo
-    equipos.push(...rotar); // Añádelo al final
+    const torneo = await response.json();
+    console.log("WEps")
+    console.log(torneo)
+  } catch (error) {
+    console.error('Error:', error.message);
+    alert("Error al generar torneo")
   }
-
-  return fechas;
 }
 
-// Ejemplo de uso
-const equipos = ["Equipo 1", "Equipo 2", "Equipo 3", "Equipo 4"];
-const fechas = generarEncuentros(equipos);
 
+// function generarEncuentros(equipos) {
+//   const totalFechas = equipos.length - 1; // Cantidad de fechas
+//   const totalEquipos = equipos.length;
 
-for (let r = 1; r <= 2; r++) {
-  console.log(`Rueda ${r}`)
-  fechas.forEach((fecha, index) => {
-    console.log(`   Fecha ${index + 1}:`);
-    fecha.forEach(encuentro => console.log(`    ${encuentro[0]} vs ${encuentro[1]}`));
-  });
-}
+//   if (totalEquipos % 2 !== 0) {
+//     // Añadir un equipo ficticio si el número de equipos es impar
+//     equipos.push("Descansa");
+//   }
+
+//   const fechas = [];
+
+//   for (let i = 0; i < totalFechas; i++) {
+//     const fecha = [];
+
+//     for (let j = 0; j < totalEquipos / 2; j++) {
+//       // Emparejar el primer equipo con el último, segundo con penúltimo, etc.
+//       const equipo1 = equipos[j];
+//       const equipo2 = equipos[totalEquipos - 1 - j];
+
+//       if (equipo1 !== "Descansa" && equipo2 !== "Descansa") {
+//         fecha.push([equipo1, equipo2]);
+//       }
+//     }
+
+//     fechas.push(fecha);
+
+//     // Rotar equipos para la siguiente fecha
+//     const rotar = equipos.splice(1, 1); // Extrae el segundo equipo
+//     equipos.push(...rotar); // Añádelo al final
+//   }
+
+//   return fechas;
+// }
+
+// // Ejemplo de uso
+// const equipos = ["Equipo 1", "Equipo 2", "Equipo 3", "Equipo 4"];
+// const fechas = generarEncuentros(equipos);
+// console.log(fechas)
+
+// for (let r = 1; r <= 2; r++) {
+//   console.log(`Rueda ${r}`)
+//   fechas.forEach((fecha, index) => {
+//     console.log(`   Fecha ${index + 1}:`);
+//     fecha.forEach(encuentro => console.log(`    ${encuentro[0]} vs ${encuentro[1]}`));
+//   });
+// }
