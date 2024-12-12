@@ -1,33 +1,33 @@
-
-.wrapperTorneo{
+.wrapperTorneo {
     height: 10vh;
     width: 100%;
     padding: 1.5rem 3rem;
-    align-items: center ;
+    align-items: center;
     display: flex;
     border-bottom: 2px solid var(--secundary-color);
 }
-.wrapperTorneo > #nameTorneo{
+
+.wrapperTorneo>#nameTorneo {
     font-family: raleway-bold;
     font-size: clamp(2.8rem, 1.6vw, 3.6rem);
     color: var(--primary-color);
 }
 
-.wrapperTorneo > .containerInfo{
+.wrapperTorneo>.containerInfo {
     display: flex;
     margin-left: auto;
     gap: 2rem;
 }
 
 
-.wrapperTorneo > .containerInfo > .itemInfo >h5{
+.wrapperTorneo>.containerInfo>.itemInfo>h5 {
     font-family: raleway-semibold;
     font-size: clamp(1.4rem, 1.2vw, 1.8rem);
     color: var(--primary-color);
     text-align: center;
 }
 
-.wrapperTorneo > .containerInfo > .itemInfo > div > p{
+.wrapperTorneo>.containerInfo>.itemInfo>div>p {
     font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.1vw, 1.6rem);
     color: var(--fourth-color);
@@ -37,21 +37,22 @@
     text-align: center;
 }
 
-.wrapperDetalleTorneo{
+.wrapperDetalleTorneo {
     display: flex;
     height: 65vh;
     width: 100%;
     padding: 1.5rem;
 }
 
-.wrapperDetalleTorneo > .containerDetalleTorneo{
+.wrapperDetalleTorneo>.containerDetalleTorneo {
     width: 35%;
 }
 
-.wrapperDetalleTorneo > #fixtureContainer{
+.wrapperDetalleTorneo>#fixtureContainer {
     width: 30%;
 }
-.wrapperDetalleTorneo > #fixtureContainer > h1{
+
+.wrapperDetalleTorneo>#fixtureContainer>h1 {
     font-family: raleway-bold;
     font-size: clamp(2rem, 1.5vw, 2.5rem);
     color: var(--primary-color);
@@ -59,14 +60,14 @@
     margin-bottom: 1rem;
 }
 
-.wrapperConfirmTorneo{
+.wrapperConfirmTorneo {
     background-color: var(--secundary-color);
     width: 100%;
     height: 10vh;
     display: flex;
 }
 
-.fixtureItemWrapper{
+.fixtureItemWrapper {
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -75,30 +76,34 @@
     padding: 1rem;
     border-radius: .8rem;
 }
-#listFixtures{
+
+#listFixtures {
     list-style: none;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
-.fixtureItemWrapper>h2{
+
+.fixtureItemWrapper>h2 {
     font-family: raleway-semibold;
     font-size: clamp(2rem, 1.5vw, 2.5rem);
     color: var(--fourth-color);
 }
-.fixtureItemWrapper > .itemInfo{
+
+.fixtureItemWrapper>.itemInfo {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
-.fixtureItemWrapper > .itemInfo > h5{
+
+.fixtureItemWrapper>.itemInfo>h5 {
     font-family: raleway-semibold;
     font-size: clamp(1.3rem, 1.1vw, 1.6rem);
     color: var(--fourth-color);
 }
 
-.fixtureItemWrapper > .itemInfo >div> p{
+.fixtureItemWrapper>.itemInfo>div>p {
     background-color: var(--fourth-color);
     padding: .6rem;
     border-radius: .6rem;
@@ -108,7 +113,7 @@
     color: var(--primary-color);
 }
 
-#buttonNewFixture{
+#buttonNewFixture {
     width: 100%;
     padding: 1rem;
     background-color: #31511e62;
@@ -120,10 +125,10 @@
     cursor: pointer;
     font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    
+
 }
 
-#buttonCancelarFormFixture{
+#buttonCancelarFormFixture {
     position: absolute;
     left: 100%;
     width: fit-content;
@@ -138,7 +143,8 @@
     cursor: pointer;
     margin-left: 1rem;
 }
-#buttonGuardarFormFixture{
+
+#buttonGuardarFormFixture {
     position: absolute;
     left: 100%;
     width: fit-content;
@@ -154,21 +160,20 @@
     margin-left: 4rem;
 }
 
-#formNewFixture{
+#formNewFixture {
     display: flex;
     position: relative;
     align-items: center;
 }
-#formNewFixture > #buttonCancelarFormFixture{
-    
-}
 
-#formNewFixture >.fixtureItemWrapper > .itemInfo {
+#formNewFixture>#buttonCancelarFormFixture {}
+
+#formNewFixture>.fixtureItemWrapper>.itemInfo {
     width: 25%;
 }
 
-#formNewFixture >.fixtureItemWrapper > .itemInfo > select,
-#formNewFixture >.fixtureItemWrapper > .itemInfo > input{
+#formNewFixture>.fixtureItemWrapper>.itemInfo>select,
+#formNewFixture>.fixtureItemWrapper>.itemInfo>input {
     width: 100%;
     padding: .4rem;
     border-radius: 5px;
@@ -180,14 +185,14 @@
     cursor: pointer;
 }
 
-#formNewFixture >.fixtureItemWrapper > .itemInfo > label{
+#formNewFixture>.fixtureItemWrapper>.itemInfo>label {
     font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1vw, 1.6rem);
     color: var(--fourth-color);
     margin-bottom: .3rem;
 }
 
-#teamsContainer > div{
+#containerDetailOne>div {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -195,7 +200,7 @@
     gap: 1rem;
 }
 
-#teamsContainer > ul{
+#containerDetailOne>ul {
     list-style: none;
     display: flex;
     flex-direction: column;
@@ -203,7 +208,7 @@
     align-items: center;
 }
 
-#teamsContainer > ul > li{
+#containerDetailOne>ul>li {
     padding: 1rem;
     border: 1px solid var(--third-color);
     border-radius: .6rem;
@@ -215,7 +220,8 @@
     color: var(--primary-color);
     /* background-color: var(--fourth-color); */
 }
-#teamsContainer #btnInscribirEquipo{
+
+#containerDetailOne #btnInscribirEquipo {
     padding: 1rem;
     background-color: var(--primary-color);
     color: var(--fourth-color);
@@ -228,24 +234,25 @@
     cursor: pointer;
 }
 
-#teamsContainer h2, #teamsContainer p{
+#containerDetailOne h2,
+#containerDetailOne p {
     font-family: raleway-semibold;
     font-size: clamp(1.3rem, 1.1vw, 1.6rem);
     text-align: center;
 }
 
-.tittleDisponibleTeams{
+.tittleDisponibleTeams {
     font-family: raleway-semibold;
     font-size: clamp(2.5rem, 1.8vw, 3rem);
     color: var(--third-color);
 }
 
-.listDisponibleTeams{
+.listDisponibleTeams {
     list-style: none;
-    margin-top:1.5rem;
+    margin-top: 1.5rem;
 }
 
-.listDisponibleTeams > li{
+.listDisponibleTeams>li {
     display: flex;
     gap: 1rem;
     align-items: center;
@@ -254,7 +261,7 @@
     color: var(--primary-color);
 }
 
-.listDisponibleTeams > li > button{
+.listDisponibleTeams>li>button {
     padding: .4rem 1rem;
     border-radius: .6rem;
     border-color: transparent;
@@ -264,12 +271,14 @@
     font-size: clamp(1.4rem, 1.2vw, 1.8rem);
     cursor: pointer;
 }
-#formInscribirEquipo{
+
+#formInscribirEquipo {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
-#formInscribirEquipo > div{
+
+#formInscribirEquipo>div {
     display: flex;
     flex-direction: column;
     width: 45%;
@@ -277,14 +286,14 @@
 }
 
 
-#formInscribirEquipo label{
+#formInscribirEquipo label {
     color: var(--primary-color);
     font-family: raleway-bold;
     font-size: clamp(1.3rem, 1.1vw, 1.6rem);
 }
 
 
-#formInscribirEquipo input{
+#formInscribirEquipo input {
     width: 100%;
     padding: .6rem;
     border-radius: .6rem;
@@ -295,7 +304,7 @@
 
 }
 
-#formInscribirEquipo > button{
+#formInscribirEquipo>button {
     padding: .4rem 1rem;
     border-radius: .6rem;
     border-color: transparent;
@@ -304,4 +313,13 @@
     font-family: raleway-bold;
     font-size: clamp(1.4rem, 1.2vw, 1.8rem);
     cursor: pointer;
+}
+
+
+#containerDetailOne .encuentroContainer {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #000;
+    border-radius: .6rem;
 }

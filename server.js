@@ -692,7 +692,7 @@ app.post('/comenzar-torneo', (req, res) => {
         `);
         const torneo = consultaTorneo.get(id_torneo);
 
-        if(torneo.estado == "Inscripcion"){
+        if (torneo.estado == "Inscripcion") {
             // 1) Obtener los fixtures que estan en el torneo - - - - - - - - - - - - - - - - -
             const consultaFixtures = db.prepare(`
                 SELECT *
@@ -700,14 +700,14 @@ app.post('/comenzar-torneo', (req, res) => {
                 WHERE id_torneoFK = ?
             `);
             const fixtures = consultaFixtures.all(id_torneo);
-    
+
             // 2) Por cada fixture realizar la asignacion de Ruedas, Fechas, Encuentros etc - - - - - - - - - - - - - - - - -
             for (let f = 0; f < fixtures.length; f++) {
                 const idFixture = fixtures[f].id_fixture
-    
+
                 const categoriaFixture = fixtures[f].id_categoriaFK
                 const divisionFixture = fixtures[f].id_divisionFK
-    
+
                 // 3)  Obtener equipos inscriptos en el torneo - - - - - - - - - - - - - - - - -
                 const consultaEquipos = db.prepare(`
                     SELECT DISTINCT num_equipoPKFK , e.nombre
@@ -721,55 +721,55 @@ app.post('/comenzar-torneo', (req, res) => {
                 equipos.forEach(element => {
                     console.log(`Equipos del fixture ${idFixture} -> ${element.nombre}`)
                 });
-    
-    
+
+
                 // 4) Las ruedas de ese fixture - - - - - - - - - - - - - - - - -
                 const consultaRuedas = db.prepare(`
                     SELECT *
                     FROM rueda
                     WHERE id_fixtureFK = ?
                 `);
-    
+
                 const ruedas = consultaRuedas.all(idFixture);
                 console.log(`Todas las ruedas del fixture ${idFixture} -> ${ruedas}`)
-    
-    
+
+
                 // 5) Genero las fechas con sus combinaciones de los encuentros - - - - - - - - - - - - - - - - -
                 const fechas = generarEncuentros(equipos);
-    
+
                 // 6) Creo las instancias de "encuentro" - - - - - - - - - - - - - - - - -
                 for (let r = 0; r < ruedas.length; r++) {
                     fechas.forEach((fecha, indexF) => {
                         fecha.forEach(encuentro => {
                             let fechaIndex = indexF + 1;
                             let id_ruedaFK = ruedas[r].id_ruedaPK;
-    
+
                             const insertarEncuentro = db.prepare(`
                                 INSERT INTO encuentro (fecha, id_ruedaFK)
                                 VALUES (?, ?)
                             `);
-                            
-    
+
+
                             const infoEncuentro = insertarEncuentro.run(fechaIndex, id_ruedaFK);
-                            
+
                             // Obtener el id del encuentro recién creado
                             const id_encuentroFK = infoEncuentro.lastInsertRowid;
-    
-    
+
+
                             // Insertar en participaEncuentro para los equipos
                             const insertarParticipaEncuentro = db.prepare(`
                                 INSERT INTO participaEncuentro (num_equipoFK, id_encuentroFK, id_arbitroFK, id_canchaFK, asistencia)
                                 VALUES (?, ?, NULL, NULL, NULL)
                             `);
-    
+
                             // Equipo 1
                             const equipo1 = encuentro[0];
                             insertarParticipaEncuentro.run(equipo1.num_equipoPKFK, id_encuentroFK);
-    
+
                             // Equipo 2
                             const equipo2 = encuentro[1];
                             insertarParticipaEncuentro.run(equipo2.num_equipoPKFK, id_encuentroFK);
-                            });
+                        });
                     });
                 }
             }
@@ -783,7 +783,7 @@ app.post('/comenzar-torneo', (req, res) => {
             `);
             actualizarEstadoTorneo.run(id_torneo);
 
-            
+
             res.json({
                 message: 'Encuentros generados exitosamente',
                 // encuentros: jsonEncuentros,
@@ -801,6 +801,75 @@ app.post('/comenzar-torneo', (req, res) => {
 });
 
 // #endregion
+
+
+app.get('/encuentros/:id_fixture', (req, res) => {
+    const { id_fixture } = req.params;
+    console.log("adadasdad")
+    try {
+        // Consultar ruedas asociadas al fixture
+        const consultaRuedas = db.prepare(`
+            SELECT id_ruedaPK AS id_rueda, numero
+            FROM rueda
+            WHERE id_fixtureFK = ?
+        `);
+        const ruedas = consultaRuedas.all(id_fixture);
+
+        const resultado = [];
+
+        for (const rueda of ruedas) {
+            // Consultar fechas asociadas a cada rueda
+            const consultaFechas = db.prepare(`
+                SELECT DISTINCT fecha
+                FROM encuentro
+                WHERE id_ruedaFK = ?
+            `);
+            const fechas = consultaFechas.all(rueda.id_rueda);
+
+            console.log(rueda)
+            const detallesRueda = {
+                id_rueda: rueda.id_rueda,
+                fechas: [],
+            };
+
+            for (const fecha of fechas) {
+                // Consultar encuentros asociados a cada fecha
+                const consultaEncuentros = db.prepare(`
+                    SELECT  e.id_encuentro, 
+                            e.fecha, 
+                            p1.id_participaEncuentro AS id_participaEncuentro1,
+                            eq1.nombre AS equipo1, 
+                            p2.id_participaEncuentro AS id_participaEncuentro2,
+                            eq2.nombre AS equipo2
+                    FROM encuentro e
+                    JOIN participaEncuentro p1 ON e.id_encuentro = p1.id_encuentroFK
+                    JOIN equipo eq1 ON p1.num_equipoFK = eq1.num_equipo
+                    JOIN participaEncuentro p2 ON e.id_encuentro = p2.id_encuentroFK
+                    JOIN equipo eq2 ON p2.num_equipoFK = eq2.num_equipo
+                    WHERE e.id_ruedaFK = ? 
+                    AND e.fecha = ?
+                    AND p1.num_equipoFK < p2.num_equipoFK
+                `);
+                const encuentros = consultaEncuentros.all(rueda.id_rueda, fecha.fecha);
+
+                detallesRueda.fechas.push({
+                    fecha: fecha.fecha,
+                    encuentros,
+                });
+            }
+
+            resultado.push(detallesRueda);
+            console.log(resultado)
+
+        }
+
+        res.json(resultado);
+    } catch (error) {
+        console.error('Error al obtener los encuentros:', error.message);
+        res.status(500).json({ error: 'Ocurrió un error al obtener los encuentros.' });
+    }
+});
+
 
 
 //Asignar fechas al Encuentro

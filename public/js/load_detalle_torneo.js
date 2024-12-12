@@ -30,9 +30,9 @@ async function showTournamentDetails() {
 
 async function loadComponents_torneoInscripcion(tournament) {
 
-  await loadFixtures(tournament.id_torneo);
+  await loadFixtures(tournament.id_torneo, tournament.estado);
 
-  if(tournament.estado == "Inscripcion"){
+  if (tournament.estado == "Inscripcion") {
     // Para habilitar el boton de comenzar torneo
     const buttonComenzarTorneoHTML = `
           <div class="wrapperConfirmTorneo">
@@ -49,8 +49,8 @@ async function loadComponents_torneoInscripcion(tournament) {
     buttonNewFixture.addEventListener("click", () => {
       createFormNewFixture(dataCategorias, dataDivisiones)
     })
-    
-  }else{
+
+  } else {
     // Para quitar el los botones de eliminar de los fixtures
     const buttonsDeleteFixture = document.querySelectorAll(".buttonDeleteFixture")
     buttonsDeleteFixture.forEach(element => element.remove());
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
-async function loadFixtures(tournamentId) {
+async function loadFixtures(tournamentId, estadoTorneo) {
   const response = await fetch(`/torneo/${tournamentId}/fixtures`);
 
   if (response.ok) {
@@ -94,7 +94,11 @@ async function loadFixtures(tournamentId) {
     let fixturesHTML = document.querySelectorAll('#listFixtures > li.i_fix');
     fixturesHTML.forEach(element => {
       const id_fixture = element.querySelector(".fixtureItemWrapper").id.split("_")[1];
-      element.addEventListener("click", () => showTeams(id_fixture));
+      if (estadoTorneo == "Inscripcion") {
+        element.addEventListener("click", () => showTeams(id_fixture));
+      } else {
+        listenerMatchsFixture()
+      }
     });
   } else {
     console.error('No se pudieron obtener las fixtures:', response.statusText);
@@ -183,7 +187,7 @@ async function showTeams(id_fixture) {
     }
 
     const data = await response.json();
-    const teamsContainer = document.getElementById('teamsContainer');
+    const containerDetailOne = document.getElementById('containerDetailOne');
 
     let htmlContent = `<div><button id="btnInscribirEquipo" onclick="openInscribirPopup(${id_fixture})">Inscribir equipo</button><h2>Equipos inscritos</h2></div>`;
     if (!data.equipos || data.equipos.length === 0) {
@@ -198,7 +202,7 @@ async function showTeams(id_fixture) {
       htmlContent += `</ul>`;
     }
 
-    teamsContainer.innerHTML = htmlContent;
+    containerDetailOne.innerHTML = htmlContent;
     listenerObtenerJugadoresPorEquipo() // Cargar los listener cada vez que se muestran los equipos para que puedar ver los jugadores
   } catch (error) {
     console.error('Error:', error.message);
@@ -505,11 +509,11 @@ async function handleGetPlayers(id_equipo) {
 
 // Mostrar los jugadores en un UL
 function mostrarJugadores(jugadores) {
-  const jugadoresContainer = document.querySelector("#jugadoresContainer > ul");
-  jugadoresContainer.innerHTML = ''; // Limpiar lista anterior
+  const containerDetailTwo = document.querySelector("#containerDetailTwo > ul");
+  containerDetailTwo.innerHTML = ''; // Limpiar lista anterior
 
   if (jugadores.length === 0) {
-    jugadoresContainer.innerHTML = `<li>No hay jugadores asociados a este equipo.</li>`;
+    containerDetailTwo.innerHTML = `<li>No hay jugadores asociados a este equipo.</li>`;
     return;
   }
 
@@ -522,7 +526,7 @@ function mostrarJugadores(jugadores) {
     </li>`;
   });
 
-  jugadoresContainer.innerHTML = liJugadores;
+  containerDetailTwo.innerHTML = liJugadores;
 
   // Configurar los listeners para los checkboxes
   setupCheckboxListeners();
@@ -604,51 +608,3 @@ async function comenzarTorneo() {
     alert("Error al generar torneo")
   }
 }
-
-
-// function generarEncuentros(equipos) {
-//   const totalFechas = equipos.length - 1; // Cantidad de fechas
-//   const totalEquipos = equipos.length;
-
-//   if (totalEquipos % 2 !== 0) {
-//     // Añadir un equipo ficticio si el número de equipos es impar
-//     equipos.push("Descansa");
-//   }
-
-//   const fechas = [];
-
-//   for (let i = 0; i < totalFechas; i++) {
-//     const fecha = [];
-
-//     for (let j = 0; j < totalEquipos / 2; j++) {
-//       // Emparejar el primer equipo con el último, segundo con penúltimo, etc.
-//       const equipo1 = equipos[j];
-//       const equipo2 = equipos[totalEquipos - 1 - j];
-
-//       if (equipo1 !== "Descansa" && equipo2 !== "Descansa") {
-//         fecha.push([equipo1, equipo2]);
-//       }
-//     }
-
-//     fechas.push(fecha);
-
-//     // Rotar equipos para la siguiente fecha
-//     const rotar = equipos.splice(1, 1); // Extrae el segundo equipo
-//     equipos.push(...rotar); // Añádelo al final
-//   }
-
-//   return fechas;
-// }
-
-// // Ejemplo de uso
-// const equipos = ["Equipo 1", "Equipo 2", "Equipo 3", "Equipo 4"];
-// const fechas = generarEncuentros(equipos);
-// console.log(fechas)
-
-// for (let r = 1; r <= 2; r++) {
-//   console.log(`Rueda ${r}`)
-//   fechas.forEach((fecha, index) => {
-//     console.log(`   Fecha ${index + 1}:`);
-//     fecha.forEach(encuentro => console.log(`    ${encuentro[0]} vs ${encuentro[1]}`));
-//   });
-// }
