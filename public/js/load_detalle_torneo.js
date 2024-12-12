@@ -20,12 +20,43 @@ async function showTournamentDetails() {
     document.getElementById("periodoInscripcion").innerText = `${tournament.fecha_inicio_insc} - ${tournament.fecha_final_insc}`;
     document.getElementById("periodoTorneo").innerText = `${tournament.fecha_inicio_torneo} - ${tournament.fecha_final_torneo}`;
 
-    // Ahora puedes cargar las fixtures
-    await loadFixtures(tournament.id_torneo);
+    await loadComponents_torneoInscripcion(tournament)
+
   } else {
     console.error('No se pudo obtener el torneo');
   }
 }
+
+
+async function loadComponents_torneoInscripcion(tournament) {
+
+  await loadFixtures(tournament.id_torneo);
+
+  if(tournament.estado == "Inscripcion"){
+    // Para habilitar el boton de comenzar torneo
+    const buttonComenzarTorneoHTML = `
+          <div class="wrapperConfirmTorneo">
+              <button type="button" onclick="comenzarTorneo()">Comenzar torneo</button>
+          </div>`
+    document.querySelector("main").insertAdjacentHTML("beforeend", buttonComenzarTorneoHTML)
+
+
+    // Para habilitar el boton de añadir fixture
+    const buttonAgregarFixtureHTML = `
+          <button type="button" id="buttonNewFixture" onclick="createFormNewFixture()">+ Agregar fixture</button>`
+    document.querySelector("#fixtureContainer").insertAdjacentHTML("beforeend", buttonAgregarFixtureHTML)
+
+    buttonNewFixture.addEventListener("click", () => {
+      createFormNewFixture(dataCategorias, dataDivisiones)
+    })
+    
+  }else{
+    // Para quitar el los botones de eliminar de los fixtures
+    const buttonsDeleteFixture = document.querySelectorAll(".buttonDeleteFixture")
+    buttonsDeleteFixture.forEach(element => element.remove());
+  }
+}
+
 
 // Llamar a la función para mostrar los detalles cuando la página cargue
 document.addEventListener('DOMContentLoaded', async () => {
@@ -42,10 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dataDivisiones = await responseDivisiones.json();
 
   // #endregion
-
-  buttonNewFixture.addEventListener("click", () => {
-    createFormNewFixture(dataCategorias, dataDivisiones)
-  })
 });
 
 
@@ -97,7 +124,7 @@ function createItemFixtures_HTML(id_fixture, ruedas, fechas, categoria, division
         <button class="buttonDeleteFixture" type="button" id="deleteFixture_${id_fixture}">X</button>
       </li>
   `
-  buttonNewFixture.parentElement.insertAdjacentHTML('beforebegin', stringForHTML);
+  listFixtures.insertAdjacentHTML('beforeend', stringForHTML);
   listenerDeleteFixture()
 }
 

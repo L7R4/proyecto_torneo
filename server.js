@@ -684,149 +684,116 @@ app.post('/comenzar-torneo', (req, res) => {
     const { id_torneo } = req.body;
 
     try {
-        // 1) Obtener los fixtures que estan en el torneo - - - - - - - - - - - - - - - - -
-        const consultaFixtures = db.prepare(`
+
+        const consultaTorneo = db.prepare(`
             SELECT *
-            FROM fixture
-            WHERE id_torneoFK = ?
+            FROM torneo
+            WHERE id_torneo = ?
         `);
-        const fixtures = consultaFixtures.all(id_torneo);
+        const torneo = consultaTorneo.get(id_torneo);
 
-        // 2) Por cada fixture realizar la asignacion de Ruedas, Fechas, Encuentros etc - - - - - - - - - - - - - - - - -
-        for (let f = 0; f < fixtures.length; f++) {
-            const idFixture = fixtures[f].id_fixture
-
-            const categoriaFixture = fixtures[f].id_categoriaFK
-            const divisionFixture = fixtures[f].id_divisionFK
-
-            // 3)  Obtener equipos inscriptos en el torneo - - - - - - - - - - - - - - - - -
-            const consultaEquipos = db.prepare(`
-                SELECT DISTINCT num_equipoPKFK , e.nombre
-                FROM inscribeEquipo ie
-                JOIN equipo e ON ie.num_equipoPKFK = e.num_equipo
-                JOIN torneo t ON ie.id_torneoPKFK = t.id_torneo
-                JOIN fixture f ON t.id_torneo = f.id_torneoFK
-                WHERE t.id_torneo = ? AND e.id_categoriaFK = ? AND e.id_divisionFK = ? AND f.id_categoriaFK = ? AND f.id_divisionFK = ?
-            `);
-            const equipos = consultaEquipos.all(id_torneo, categoriaFixture, divisionFixture, categoriaFixture, divisionFixture);
-            equipos.forEach(element => {
-                console.log(`Equipos del fixture ${idFixture} -> ${element.nombre}`)
-            });
-
-
-            // 4) Las ruedas de ese fixture - - - - - - - - - - - - - - - - -
-            const consultaRuedas = db.prepare(`
+        if(torneo.estado == "Inscripcion"){
+            // 1) Obtener los fixtures que estan en el torneo - - - - - - - - - - - - - - - - -
+            const consultaFixtures = db.prepare(`
                 SELECT *
-                FROM rueda
-                WHERE id_fixtureFK = ?
+                FROM fixture
+                WHERE id_torneoFK = ?
             `);
-
-            const ruedas = consultaRuedas.all(idFixture);
-            console.log(`Todas las ruedas del fixture ${idFixture} -> ${ruedas}`)
-
-
-            // 5) Genero las fechas con sus combinaciones de los encuentros - - - - - - - - - - - - - - - - -
-            const fechas = generarEncuentros(equipos);
-
-            // 6) Creo las instancias de "encuentro" - - - - - - - - - - - - - - - - -
-            for (let r = 0; r < ruedas.length; r++) {
-                fechas.forEach((fecha, indexF) => {
-                    fecha.forEach(encuentro => {
-                        let fechaIndex = indexF + 1;
-                        let id_ruedaFK = ruedas[r].id_ruedaPK;
-
-                        const insertarEncuentro = db.prepare(`
-                            INSERT INTO encuentro (fecha, id_ruedaFK)
-                            VALUES (?, ?)
-                        `);
-
-                        insertarEncuentro.run(fechaIndex, id_ruedaFK);
-                    });
+            const fixtures = consultaFixtures.all(id_torneo);
+    
+            // 2) Por cada fixture realizar la asignacion de Ruedas, Fechas, Encuentros etc - - - - - - - - - - - - - - - - -
+            for (let f = 0; f < fixtures.length; f++) {
+                const idFixture = fixtures[f].id_fixture
+    
+                const categoriaFixture = fixtures[f].id_categoriaFK
+                const divisionFixture = fixtures[f].id_divisionFK
+    
+                // 3)  Obtener equipos inscriptos en el torneo - - - - - - - - - - - - - - - - -
+                const consultaEquipos = db.prepare(`
+                    SELECT DISTINCT num_equipoPKFK , e.nombre
+                    FROM inscribeEquipo ie
+                    JOIN equipo e ON ie.num_equipoPKFK = e.num_equipo
+                    JOIN torneo t ON ie.id_torneoPKFK = t.id_torneo
+                    JOIN fixture f ON t.id_torneo = f.id_torneoFK
+                    WHERE t.id_torneo = ? AND e.id_categoriaFK = ? AND e.id_divisionFK = ? AND f.id_categoriaFK = ? AND f.id_divisionFK = ?
+                `);
+                const equipos = consultaEquipos.all(id_torneo, categoriaFixture, divisionFixture, categoriaFixture, divisionFixture);
+                equipos.forEach(element => {
+                    console.log(`Equipos del fixture ${idFixture} -> ${element.nombre}`)
                 });
-                // fechas.forEach((fecha, indexF) => {
-                //     fecha.forEach(encuentro => {
-
-                //         let fecha = indexF + 1
-                //         let id_ruedaFK = ruedas[r].id_ruedaPK
-
-                //         const insertarEncuentro = db.prepare(`
-                //             INSERT INTO encuentro (fecha, id_ruedaFK)
-                //             VALUES (?, ?)
-                //         `);
-
-                //         insertarEncuentro.run(fecha, id_ruedaFK);
-
-                //         // const equipo1 = encuentro[0]
-                //         // const equipo2 = encuentro[1]
-                //         // console.log(`    ${encuentro[0]} vs ${encuentro[1]}`)
-                //     });
-                // });
+    
+    
+                // 4) Las ruedas de ese fixture - - - - - - - - - - - - - - - - -
+                const consultaRuedas = db.prepare(`
+                    SELECT *
+                    FROM rueda
+                    WHERE id_fixtureFK = ?
+                `);
+    
+                const ruedas = consultaRuedas.all(idFixture);
+                console.log(`Todas las ruedas del fixture ${idFixture} -> ${ruedas}`)
+    
+    
+                // 5) Genero las fechas con sus combinaciones de los encuentros - - - - - - - - - - - - - - - - -
+                const fechas = generarEncuentros(equipos);
+    
+                // 6) Creo las instancias de "encuentro" - - - - - - - - - - - - - - - - -
+                for (let r = 0; r < ruedas.length; r++) {
+                    fechas.forEach((fecha, indexF) => {
+                        fecha.forEach(encuentro => {
+                            let fechaIndex = indexF + 1;
+                            let id_ruedaFK = ruedas[r].id_ruedaPK;
+    
+                            const insertarEncuentro = db.prepare(`
+                                INSERT INTO encuentro (fecha, id_ruedaFK)
+                                VALUES (?, ?)
+                            `);
+                            
+    
+                            const infoEncuentro = insertarEncuentro.run(fechaIndex, id_ruedaFK);
+                            
+                            // Obtener el id del encuentro recién creado
+                            const id_encuentroFK = infoEncuentro.lastInsertRowid;
+    
+    
+                            // Insertar en participaEncuentro para los equipos
+                            const insertarParticipaEncuentro = db.prepare(`
+                                INSERT INTO participaEncuentro (num_equipoFK, id_encuentroFK, id_arbitroFK, id_canchaFK, asistencia)
+                                VALUES (?, ?, NULL, NULL, NULL)
+                            `);
+    
+                            // Equipo 1
+                            const equipo1 = encuentro[0];
+                            insertarParticipaEncuentro.run(equipo1.num_equipoPKFK, id_encuentroFK);
+    
+                            // Equipo 2
+                            const equipo2 = encuentro[1];
+                            insertarParticipaEncuentro.run(equipo2.num_equipoPKFK, id_encuentroFK);
+                            });
+                    });
+                }
             }
+
+
+            // 7. Actualizar el estado del torneo a "En curso"
+            const actualizarEstadoTorneo = db.prepare(`
+                UPDATE torneo
+                SET estado = 'En curso'
+                WHERE id_torneo = ?
+            `);
+            actualizarEstadoTorneo.run(id_torneo);
+
+            
+            res.json({
+                message: 'Encuentros generados exitosamente',
+                // encuentros: jsonEncuentros,
+            });
+        }
+        else {
+            res.status(400).json({ error: 'El torneo no está en estado de Inscripcion.' });
         }
 
 
-        // const { cantidad_fechas, id_categoriaFK, id_divisionFK } = fixture;
-
-
-
-        // if (equipos.length === 0) {
-        //     return res.status(404).json({ message: 'No hay equipos inscriptos en esta categoría y división' });
-        // }
-
-
-
-
-        // const insertarParticipaEncuentro = db.prepare(`
-        //     INSERT INTO ParticipaEncuentro (Num_equipoFK, ID_encuentroFK)
-        //     VALUES (?, ?)
-        // `);
-
-        // const jsonEncuentros = [];
-
-        // for (let r = 1; r <= rueda; r++) { // Para cada rueda
-        //     const combinaciones = generarEncuentros(equipos);
-
-        //     const ruedaData = {
-        //         rueda: r,
-        //         fechas: [],
-        //     };
-
-        //     for (let fecha = 1; fecha <= fechas; fecha++) {
-        //         const partidosFecha = combinaciones.splice(0, equipos.length / 2);
-
-        //         const fechaData = {
-        //             fecha,
-        //             encuentros: [],
-        //         };
-
-        //         for (const partido of partidosFecha) {
-        //             const [equipo1, equipo2] = partido;
-
-        //             // Crear el encuentro con `Dia` y `Hora` vacíos
-        //             const resultadoEncuentro = insertarEncuentro.run(fecha, r, id_fixtureFK);
-
-        //             // Registrar los equipos participantes en el encuentro
-        //             const idEncuentro = resultadoEncuentro.lastInsertRowid;
-        //             insertarParticipaEncuentro.run(equipo1.num_equipoFK, idEncuentro);
-        //             insertarParticipaEncuentro.run(equipo2.num_equipoFK, idEncuentro);
-
-        //             // Agregar el encuentro al JSON
-        //             fechaData.encuentros.push({
-        //                 equipo1: equipo1.nombre,
-        //                 equipo2: equipo2.nombre,
-        //             });
-        //         }
-
-        //         ruedaData.fechas.push(fechaData);
-        //     }
-
-        //     jsonEncuentros.push(ruedaData);
-        // }
-
-        res.json({
-            message: 'Encuentros generados exitosamente',
-            // encuentros: jsonEncuentros,
-        });
     } catch (error) {
         console.error('Error al generar encuentros:', error.message);
         res.status(500).json({ error: 'Ocurrió un error al generar los encuentros' });
