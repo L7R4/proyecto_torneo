@@ -1,5 +1,5 @@
 
-const buttonNewFixture = document.querySelector("#buttonNewFixture")
+// const buttonNewFixture = document.querySelector("#buttonNewFixture")
 
 async function getTorneoDetail() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -28,6 +28,7 @@ async function showTournamentDetails() {
 }
 
 
+
 async function loadComponents_torneoInscripcion(tournament) {
 
   await loadFixtures(tournament.id_torneo, tournament.estado);
@@ -35,10 +36,9 @@ async function loadComponents_torneoInscripcion(tournament) {
   if (tournament.estado == "Inscripcion") {
     // Para habilitar el boton de comenzar torneo
     const buttonComenzarTorneoHTML = `
-          <div class="wrapperConfirmTorneo">
-              <button type="button" onclick="comenzarTorneo()">Comenzar torneo</button>
-          </div>`
-    document.querySelector("main").insertAdjacentHTML("beforeend", buttonComenzarTorneoHTML)
+        <button type="button" id="comenzarTorneoButton" onclick="comenzarTorneo()">Comenzar torneo</button>
+        `
+    document.querySelector("#nameTorneo").insertAdjacentHTML("afterend", buttonComenzarTorneoHTML)
 
 
     // Para habilitar el boton de añadir fixture
@@ -46,6 +46,18 @@ async function loadComponents_torneoInscripcion(tournament) {
           <button type="button" id="buttonNewFixture" onclick="createFormNewFixture()">+ Agregar fixture</button>`
     document.querySelector("#fixtureContainer").insertAdjacentHTML("beforeend", buttonAgregarFixtureHTML)
 
+
+    // #region Para rellenar los inputs de categorias y divisiones
+    // Obtener las categorias disponibles
+    const responseCategorias = await fetch('/categorias')
+    const dataCategorias = await responseCategorias.json();
+
+
+    // Obtener las divisiones disponibles
+    const responseDivisiones = await fetch('/divisiones')
+    const dataDivisiones = await responseDivisiones.json();
+
+    // #endregion
     buttonNewFixture.addEventListener("click", () => {
       createFormNewFixture(dataCategorias, dataDivisiones)
     })
@@ -62,17 +74,7 @@ async function loadComponents_torneoInscripcion(tournament) {
 document.addEventListener('DOMContentLoaded', async () => {
   await showTournamentDetails()
 
-  // #region Para rellenar los inputs de categorias y divisiones
-  // Obtener las categorias disponibles
-  const responseCategorias = await fetch('/categorias')
-  const dataCategorias = await responseCategorias.json();
-
-
-  // Obtener las divisiones disponibles
-  const responseDivisiones = await fetch('/divisiones')
-  const dataDivisiones = await responseDivisiones.json();
-
-  // #endregion
+  
 });
 
 
@@ -98,12 +100,15 @@ async function loadFixtures(tournamentId, estadoTorneo) {
         element.addEventListener("click", () => showTeams(id_fixture));
       } else {
         listenerMatchsFixture()
+        
+
       }
     });
   } else {
     console.error('No se pudieron obtener las fixtures:', response.statusText);
   }
 }
+
 
 
 function createItemFixtures_HTML(id_fixture, ruedas, fechas, categoria, division) {
@@ -167,7 +172,7 @@ function createFormNewFixture(categorias, divisiones) {
   `
 
   buttonNewFixture.style.display = "none"
-  buttonNewFixture.parentElement.insertAdjacentHTML('beforebegin', stringForHTML);
+  buttonNewFixture.parentElement.querySelector("#listFixtures").insertAdjacentHTML('beforeend', stringForHTML);
 
 }
 

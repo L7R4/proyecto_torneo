@@ -110,6 +110,9 @@ a.torneoItemWrapper > .containerInfo > .itemInfo > div > p{
     margin-top: 1.5rem;
     width: 48%;
 }
+#registerTorneoForm .inputWrapper:nth-child(1){
+    flex-basis: 100%;
+}
 
 #registerTorneoForm input,#registerTorneoForm select{
     width: 100%;

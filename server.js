@@ -180,7 +180,6 @@ app.get('/torneos', (req, res) => {
         `);
 
         const torneos = torneosConsultas.all();
-        console.log(torneos)
         // Si no se encuentran torneos
         if (torneos.length === 0) {
             return res.status(404).json({ message: 'No se encontraron torneos' });
@@ -202,7 +201,6 @@ app.post('/create_torneos', (req, res) => {
     try {
         // Obtener los datos del torneo desde el cuerpo de la solicitud
         const { nombre, fecha_inicio_insc, fecha_final_insc, fecha_inicio_torneo, fecha_final_torneo } = req.body;
-        console.log('Datos recibidos:', req.body);
 
         // Insertar el nuevo torneo en la base de datos
         const insertTorneo = db.prepare(`
@@ -270,7 +268,6 @@ app.get('/torneo/:id/fixtures', (req, res) => {
     `).all(torneoId);
     if (fixtures.length > 0) {
         res.json({ fixtures });
-        console.log(fixtures)
 
     } else {
         res.status(404).json({ error: "No se encontraron fixtures para este torneo" });
@@ -309,7 +306,6 @@ app.get('/equipos/categoria/:id_categoriaFK/:id_divisionFK', (req, res) => {
 //#region Endpoint para traer jugadores por equipo asociado
 app.post('/jugadores/por_equipo', (req, res) => {
     const { id_equipo } = req.body;
-    console.log("esad")
     try {
         const consultaJugadores = db.prepare(`
             SELECT * 
@@ -544,7 +540,6 @@ app.delete('/torneos/inscripcion_jugador', (req, res) => {
 
 app.get('/equipos-inscritos-fixture/:id_fixture', (req, res) => {
     const { id_fixture } = req.params; // Usamos req.params para obtener el id del fixture.
-    console.log("ID del fixture recibido:", id_fixture);
 
     try {
         // Obtener categoría y división del fixture
@@ -584,7 +579,7 @@ app.get('/equipos-inscritos-fixture/:id_fixture', (req, res) => {
 });
 
 
-// Endpoint para obtener equipos disponibles para inscribir en un torneo
+//#region Endpoint para obtener equipos disponibles para inscribir en un torneo
 app.get('/equipos-disponibles-fixture/:id_fixture', (req, res) => {
     const { id_fixture } = req.params;
 
@@ -620,7 +615,6 @@ app.get('/equipos-disponibles-fixture/:id_fixture', (req, res) => {
             )
         `);
 
-        console.log(consultaEquiposDisponibles)
 
         const equiposDisponibles = consultaEquiposDisponibles.all(id_categoriaFK, id_divisionFK, id_torneoFK);
 
@@ -633,14 +627,13 @@ app.get('/equipos-disponibles-fixture/:id_fixture', (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al obtener los equipos disponibles' });
     }
 });
+// #endregion
 
 
-
-
+// #region Endpoint para inscribir equipo 
 app.post('/inscribir-equipo', (req, res) => {
     const { id_torneoPKFK, num_equipoPKFK, representante, dt } = req.body;
 
-    console.log("Datos recibidos para inscripción:", req.body);
 
     if (!id_torneoPKFK || !num_equipoPKFK || !representante || !dt) {
         return res.status(400).json({ error: 'Todos los campos (id_torneoPKFK, num_equipoPKFK, representante y DT) son obligatorios.' });
@@ -675,7 +668,7 @@ app.post('/inscribir-equipo', (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al inscribir el equipo en el torneo.' });
     }
 });
-
+// #endregion
 
 
 // #region Endpoint para calcular fechas y generar encuentros de los equipos
@@ -718,9 +711,7 @@ app.post('/comenzar-torneo', (req, res) => {
                     WHERE t.id_torneo = ? AND e.id_categoriaFK = ? AND e.id_divisionFK = ? AND f.id_categoriaFK = ? AND f.id_divisionFK = ?
                 `);
                 const equipos = consultaEquipos.all(id_torneo, categoriaFixture, divisionFixture, categoriaFixture, divisionFixture);
-                equipos.forEach(element => {
-                    console.log(`Equipos del fixture ${idFixture} -> ${element.nombre}`)
-                });
+                
 
 
                 // 4) Las ruedas de ese fixture - - - - - - - - - - - - - - - - -
@@ -731,7 +722,6 @@ app.post('/comenzar-torneo', (req, res) => {
                 `);
 
                 const ruedas = consultaRuedas.all(idFixture);
-                console.log(`Todas las ruedas del fixture ${idFixture} -> ${ruedas}`)
 
 
                 // 5) Genero las fechas con sus combinaciones de los encuentros - - - - - - - - - - - - - - - - -
@@ -803,9 +793,160 @@ app.post('/comenzar-torneo', (req, res) => {
 // #endregion
 
 
+// #region Endpoint para obtener el detalle del encuentro
+app.get('/encuentro/:id_encuentro', (req, res) => {
+    const id_encuentro = req.params.id_encuentro;
+
+    try {
+        // Consulta para obtener información del encuentro y los equipos
+        const info_encuentro = db.prepare(`
+            SELECT 
+            e1.nombre AS equipo1, 
+            e2.nombre AS equipo2, 
+            pe1.id_participaEncuentro AS id_participa1, 
+            pe2.id_participaEncuentro AS id_participa2,
+            c.nombre AS cancha, 
+            a.nombre AS arbitro, 
+            en.dia AS dia, 
+            en.hora AS hora
+            FROM encuentro en
+            JOIN participaEncuentro pe1 ON pe1.id_encuentroFK = en.id_encuentro
+            JOIN equipo e1 ON pe1.num_equipoFK = e1.num_equipo
+            JOIN participaEncuentro pe2 ON pe2.id_encuentroFK = en.id_encuentro AND pe1.id_participaEncuentro != pe2.id_participaEncuentro
+            JOIN equipo e2 ON pe2.num_equipoFK = e2.num_equipo
+            LEFT JOIN cancha c ON pe1.id_canchaFK = c.id_cancha
+            LEFT JOIN arbitro a ON pe1.dni_arbitroFK = a.dni_arbitro
+            WHERE en.id_encuentro = ?
+        `).get(id_encuentro);
+
+        // Consulta para obtener goles por equipo
+        const goles_equipo1 = db.prepare(`
+            SELECT g.minuto, j.nombre AS jugador
+            FROM gol g
+            JOIN jugador j ON g.num_socioFK = j.num_socio
+            JOIN participaEncuentro pe ON g.participaEncuentroFK = pe.id_participaEncuentro
+            WHERE pe.id_encuentroFK = ? AND pe.num_equipoFK = (
+                SELECT num_equipoFK FROM participaEncuentro WHERE id_encuentroFK = ? LIMIT 1
+            )
+        `).all(id_encuentro, id_encuentro);
+
+        const goles_equipo2 = db.prepare(`
+            SELECT g.minuto, j.nombre AS jugador
+            FROM gol g
+            JOIN jugador j ON g.num_socioFK = j.num_socio
+            JOIN participaEncuentro pe ON g.participaEncuentroFK = pe.id_participaEncuentro
+            WHERE pe.id_encuentroFK = ? AND pe.num_equipoFK != (
+                SELECT num_equipoFK FROM participaEncuentro WHERE id_encuentroFK = ? LIMIT 1
+            )
+        `).all(id_encuentro, id_encuentro);
+
+        // Consulta para obtener infracciones por equipo
+        const infracciones_equipo1 = db.prepare(`
+            SELECT i.minuto, i.tipo, i.tarjeta, j.nombre AS jugador
+            FROM infraccion i
+            JOIN jugador j ON i.num_socioFK = j.num_socio
+            JOIN participaEncuentro pe ON i.participaEncuentroFK = pe.id_participaEncuentro
+            WHERE pe.id_encuentroFK = ? AND pe.num_equipoFK = (
+                SELECT num_equipoFK FROM participaEncuentro WHERE id_encuentroFK = ? LIMIT 1
+            )
+        `).all(id_encuentro, id_encuentro);
+
+        const infracciones_equipo2 = db.prepare(`
+            SELECT i.minuto, i.tipo, i.tarjeta, j.nombre AS jugador
+            FROM infraccion i
+            JOIN jugador j ON i.num_socioFK = j.num_socio
+            JOIN participaEncuentro pe ON i.participaEncuentroFK = pe.id_participaEncuentro
+            WHERE pe.id_encuentroFK = ? AND pe.num_equipoFK != (
+                SELECT num_equipoFK FROM participaEncuentro WHERE id_encuentroFK = ? LIMIT 1
+            )
+        `).all(id_encuentro, id_encuentro);
+
+        res.json({
+            equipo1: info_encuentro.equipo1,
+            equipo2: info_encuentro.equipo2,
+            goles_equipo1,
+            goles_equipo2,
+            infracciones_equipo1,
+            infracciones_equipo2,
+            cancha: info_encuentro.cancha || 'Sin asignar',
+            arbitro: info_encuentro.arbitro || 'Sin asignar',
+            dia: info_encuentro.dia || '',
+            hora:info_encuentro.hora || ''
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener los datos del encuentro' });
+    }
+});
+// #endregion
+
+
+// #region Endpoint para obtener la lista de jugadores de dicho equipo atraves de participaEncuentro
+app.get('/jugadores/:id_participaEncuentro', (req, res) => {
+    const id_participaEncuentro = req.params.id_participaEncuentro;
+
+    try {
+        const jugadores = db.prepare(`
+            SELECT j.num_socio, j.nombre
+            FROM jugador j
+            JOIN equipo e ON j.num_equipoFK = e.num_equipo
+            JOIN participaEncuentro pe ON e.num_equipo = pe.num_equipoFK
+            WHERE pe.id_participaEncuentro = ?
+        `).all(id_participaEncuentro);
+
+        res.json(jugadores);
+    } catch (error) {
+        console.error('Error al obtener jugadores:', error);
+        res.status(500).json({ error: 'Error al obtener jugadores' });
+    }
+});
+
+// #endregion
+
+
+// #region Endpoint para registrar un gol
+app.post('/goles/crear_gol', (req, res) => {
+    const { jugador, minuto, id_participaEncuentro } = req.body;
+
+    try {
+        db.prepare(`
+            INSERT INTO gol (num_socioFK, minuto, participaEncuentroFK)
+            VALUES (?, ?, ?)
+        `).run(jugador, minuto, id_participaEncuentro);
+
+        res.status(200).json({ message: 'Gol registrado correctamente' });
+    } catch (error) {
+        console.error('Error al registrar gol:', error);
+        res.status(500).json({ error: 'Error al registrar gol' });
+    }
+});
+
+// #endregion
+
+
+// #region Endpoint para registrar una infraccion
+app.post('/infracciones/crear_infraccion', (req, res) => {
+    const { jugador, minuto, tipo, tarjeta, id_participaEncuentro } = req.body;
+
+    try {
+        db.prepare(`
+            INSERT INTO infraccion (num_socioFK, minuto, tipo, tarjeta, participaEncuentroFK)
+            VALUES (?, ?, ?, ?, ?)
+        `).run(jugador, minuto, tipo, tarjeta, id_participaEncuentro);
+
+        res.status(200).json({ message: 'Infracción registrada correctamente' });
+    } catch (error) {
+        console.error('Error al registrar infracción:', error);
+        res.status(500).json({ error: 'Error al registrar infracción' });
+    }
+});
+
+// #endregion
+
+
+// #region Enpoint para obtener todos los matchs con su info de dicha fixture
 app.get('/encuentros/:id_fixture', (req, res) => {
     const { id_fixture } = req.params;
-    console.log("adadasdad")
     try {
         // Consultar ruedas asociadas al fixture
         const consultaRuedas = db.prepare(`
@@ -826,7 +967,6 @@ app.get('/encuentros/:id_fixture', (req, res) => {
             `);
             const fechas = consultaFechas.all(rueda.id_rueda);
 
-            console.log(rueda)
             const detallesRueda = {
                 id_rueda: rueda.id_rueda,
                 fechas: [],
@@ -838,9 +978,15 @@ app.get('/encuentros/:id_fixture', (req, res) => {
                     SELECT  e.id_encuentro, 
                             e.fecha, 
                             p1.id_participaEncuentro AS id_participaEncuentro1,
-                            eq1.nombre AS equipo1, 
+                            eq1.nombre AS equipo1,
+                            (SELECT COUNT(*) 
+                                 FROM gol g 
+                                 WHERE g.participaEncuentroFK = p1.id_participaEncuentro) AS golesEquipo1,
                             p2.id_participaEncuentro AS id_participaEncuentro2,
-                            eq2.nombre AS equipo2
+                            eq2.nombre AS equipo2,
+                            (SELECT COUNT(*) 
+                                 FROM gol g 
+                                 WHERE g.participaEncuentroFK = p2.id_participaEncuentro) AS golesEquipo2
                     FROM encuentro e
                     JOIN participaEncuentro p1 ON e.id_encuentro = p1.id_encuentroFK
                     JOIN equipo eq1 ON p1.num_equipoFK = eq1.num_equipo
@@ -849,6 +995,7 @@ app.get('/encuentros/:id_fixture', (req, res) => {
                     WHERE e.id_ruedaFK = ? 
                     AND e.fecha = ?
                     AND p1.num_equipoFK < p2.num_equipoFK
+
                 `);
                 const encuentros = consultaEncuentros.all(rueda.id_rueda, fecha.fecha);
 
@@ -859,7 +1006,6 @@ app.get('/encuentros/:id_fixture', (req, res) => {
             }
 
             resultado.push(detallesRueda);
-            console.log(resultado)
 
         }
 
@@ -870,36 +1016,8 @@ app.get('/encuentros/:id_fixture', (req, res) => {
     }
 });
 
+// #endregion
 
-
-//Asignar fechas al Encuentro
-app.post('/asignar_fecha', (req, res) => {
-    const { id_encuentro, dia, hora } = req.body;
-
-    // Validar que los campos requeridos estén presentes
-    if (!id_encuentro || !dia || !hora) {
-        return res.status(400).json({ error: 'El ID del encuentro, el día y la hora son obligatorios' });
-    }
-
-    try {
-        // Actualizar el campo Dia y Hora del encuentro
-        const actualizarEncuentro = db.prepare(`
-            UPDATE Encuentro
-            SET Dia = ?, Hora = ?
-            WHERE ID_encuentro = ?
-        `);
-        const resultado = actualizarEncuentro.run(dia, hora, id_encuentro);
-
-        if (resultado.changes === 0) {
-            return res.status(404).json({ message: 'No se encontró el encuentro especificado' });
-        }
-
-        res.json({ message: 'Fecha y hora asignadas correctamente al encuentro' });
-    } catch (error) {
-        console.error('Error al asignar fecha y hora:', error.message);
-        res.status(500).json({ error: 'Ocurrió un error al asignar fecha y hora' });
-    }
-});
 
 // Función para generar combinaciones de equipos
 function generarEncuentros(equipos) {
@@ -937,112 +1055,201 @@ function generarEncuentros(equipos) {
 }
 
 
-// crea una cancha nueva
-app.post('/registrar_cancha', (req, res) => {
+// #region Endpoint para registrar una cancha
+app.post("/canchas/crear_cancha", (req, res) => {
     const { nombre, direcc } = req.body;
 
-    // Validar que los campos requeridos estén presentes
+    // Validar que los campos no estén vacíos
     if (!nombre || !direcc) {
-        return res.status(400).json({ error: 'El nombre y la dirección de la cancha son obligatorios' });
+        return res.status(400).json({ error: "Todos los campos son obligatorios" });
     }
 
     try {
-        // Insertar la cancha en la base de datos
-        const insertarCancha = db.prepare(`
-            INSERT INTO Cancha (nombre, direcc)
+        const stmt = db.prepare(`
+            INSERT INTO cancha (nombre, direcc) 
             VALUES (?, ?)
         `);
-        const resultado = insertarCancha.run(nombre, direcc);
+        stmt.run(nombre, direcc);
 
-        // Devolver una respuesta con el ID de la cancha creada
-        res.json({ message: 'Cancha registrada exitosamente', id: resultado.lastInsertRowid });
+        res.status(201).json({ message: "Cancha registrada exitosamente" });
     } catch (error) {
-        console.error('Error al registrar cancha:', error.message);
-        res.status(500).json({ error: 'Ocurrió un error al registrar la cancha' });
+        console.error("Error al registrar la cancha:", error);
+        res.status(500).json({ error: "Error al registrar la cancha" });
     }
 });
-// asigna una cancha a un ParticipaEncuentro
-app.post('/asignar_cancha', (req, res) => {
-    const { id_encuentroFK, id_canchaFK } = req.body;
+// #endregion
 
-    // Validar que los campos requeridos estén presentes
-    if (!id_encuentroFK || !id_canchaFK) {
-        return res.status(400).json({ error: 'El ID del encuentro y el ID de la cancha son obligatorios' });
+
+// #region Endpoint para registrar un árbitro
+app.post("/arbitros/crear_arbitro", (req, res) => {
+    const { nombre, apellido, dni_arbitro, fec_nac, domic, es_certificado, experiencia } = req.body;
+
+    // Validar que todos los campos estén presentes
+    if (!nombre || !apellido || !dni_arbitro || !fec_nac || !domic || es_certificado === undefined || !experiencia) {
+        return res.status(400).json({ error: "Todos los campos son obligatorios." });
     }
 
     try {
-        // Actualizar el campo ID_canchaFK en ParticipaEncuentro
-        const actualizarCancha = db.prepare(`
-            UPDATE ParticipaEncuentro
-            SET ID_canchaFK = ?
-            WHERE ID_encuentroFK = ?
+        const stmt = db.prepare(`
+            INSERT INTO arbitro (dni_arbitro, nombre, apellido, fec_nac, domic, es_certificado, experiencia)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `);
-        const resultado = actualizarCancha.run(id_canchaFK, id_encuentroFK);
+        stmt.run(dni_arbitro, nombre, apellido, fec_nac, domic, es_certificado ? 1 : 0, experiencia);
 
-        if (resultado.changes === 0) {
-            return res.status(404).json({ message: 'No se encontró el encuentro especificado para asignar la cancha' });
-        }
-
-        res.json({ message: 'Cancha asignada correctamente al encuentro' });
+        res.status(201).json({ message: "Árbitro registrado exitosamente." });
     } catch (error) {
-        console.error('Error al asignar cancha:', error.message);
-        res.status(500).json({ error: 'Ocurrió un error al asignar la cancha' });
+        console.error("Error al insertar árbitro:", error.message);
+        res.status(500).json({ error: "Error al registrar el árbitro." });
     }
 });
+// #endregion
 
-//crea un nuevo arbitro
-app.post('/registrar_arbitros', (req, res) => {
-    const { nombre, domicilio, fecha_nac, EsCertificado, experiencia } = req.body;
 
-    // Validar que los campos requeridos estén presentes
-    if (!nombre || !domicilio || !fecha_nac || EsCertificado === undefined || !experiencia) {
-        return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+//#region Endpoint para obtener árbitros
+app.get('/arbitros', (req, res) => {
+    try {
+        const arbitros = db.prepare('SELECT dni_arbitro, nombre FROM arbitro').all();
+        res.json(arbitros);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener árbitros' });
     }
+});
+// #endregion
+
+
+// #region Endpoint para obtener canchas
+app.get('/canchas', (req, res) => {
+    try {
+        const canchas = db.prepare('SELECT id_cancha, nombre FROM cancha').all();
+        res.json(canchas);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener canchas' });
+    }
+});
+// #endregion
+
+
+// #region Endpoint para actualizar datos del encuentro
+app.put('/encuentro/guardar/:id_encuentro', (req, res) => {
+    const { id_encuentro } = req.params;
+    const { cancha, arbitro, dia, hora } = req.body;
 
     try {
-        // Insertar el árbitro en la base de datos
-        const insertarArbitro = db.prepare(`
-            INSERT INTO Arbitro (nombre, domicilio, fecha_nac, EsCertificado, experiencia)
-            VALUES (?, ?, ?, ?, ?)
-        `);
-        const resultado = insertarArbitro.run(nombre, domicilio, fecha_nac, EsCertificado, experiencia);
+        db.prepare(`
+            UPDATE encuentro
+            SET dia = ?, hora = ?
+            WHERE id_encuentro = ?
+        `).run(dia, hora, id_encuentro);
 
-        // Devolver una respuesta con el ID del árbitro creado
-        res.json({ message: 'Árbitro registrado exitosamente', id: resultado.lastInsertRowid });
+        db.prepare(`
+            UPDATE participaEncuentro
+            SET id_canchaFK = ?, dni_arbitroFK = ?
+            WHERE id_encuentroFK = ?
+        `).run(cancha, arbitro, id_encuentro);
+
+        res.json({ message: 'Datos del encuentro actualizados correctamente' });
     } catch (error) {
-        console.error('Error al registrar árbitro:', error.message);
-        res.status(500).json({ error: 'Ocurrió un error al registrar el árbitro' });
+        console.error(error);
+        res.status(500).json({ error: 'Error al actualizar los datos del encuentro' });
     }
 });
+// #endregion
 
-//asigna el arbitro a un ParticipaEncuentro
-app.post('/asignar_arbitro', (req, res) => {
-    const { id_encuentroFK, id_arbitroFK } = req.body;
 
-    // Validar que los campos requeridos estén presentes
-    if (!id_encuentroFK || !id_arbitroFK) {
-        return res.status(400).json({ error: 'El ID del encuentro y el ID del árbitro son obligatorios' });
+// #region Endpoint para obtener goles a favor, en contra y diferencia de goles
+app.get('/tabla-puntos/:id_fixture', (req, res) => {
+    const fixtureId = req.params.id_fixture;
+  
+    // Consulta para obtener los equipos de la fixture
+    const equiposQuery = `
+      SELECT DISTINCT
+          eq.num_equipo,
+          eq.nombre AS equipo
+      FROM
+          encuentro e
+      JOIN participaEncuentro p1 ON e.id_encuentro = p1.id_encuentroFK
+      JOIN equipo eq ON p1.num_equipoFK = eq.num_equipo
+      JOIN rueda r ON e.id_ruedaFK = r.id_ruedaPK
+      WHERE
+          r.id_fixtureFK = ?;  -- Filtra por el fixture específico
+    `;
+    const equipos = db.prepare(equiposQuery).all(fixtureId);
+  
+    // Resultados a devolver
+    const resultados = [];
+  
+    // Recorremos los equipos obtenidos
+    for (let e = 0; e < equipos.length; e++) {
+      const numEquipo = equipos[e].num_equipo;
+  
+      // Consulta para obtener los goles a favor de cada equipo
+      const golesAFavorQuery = `
+        SELECT
+            eq.num_equipo,
+            COUNT(g.id_gol) AS goles_a_favor
+        FROM
+            encuentro e
+        JOIN participaEncuentro p1 ON e.id_encuentro = p1.id_encuentroFK
+        JOIN equipo eq ON p1.num_equipoFK = eq.num_equipo
+        LEFT JOIN gol g ON g.participaEncuentroFK = p1.id_participaEncuentro
+        JOIN rueda r ON e.id_ruedaFK = r.id_ruedaPK
+        WHERE
+            r.id_fixtureFK = ?  -- Filtra por el fixture específico
+            AND eq.num_equipo = ?  -- Filtra por el nombre del equipo
+        GROUP BY
+            eq.nombre;
+      `;
+      const golesAFavor = db.prepare(golesAFavorQuery).get(fixtureId, numEquipo) || { goles_a_favor: 0 };
+  
+      // Consulta para obtener los goles en contra de cada equipo
+      const golesEnContraQuery = `
+        SELECT 
+        COUNT(g.id_gol) AS goles_en_contra
+        FROM
+            participaEncuentro pe
+        JOIN encuentro e ON pe.id_encuentroFK = e.id_encuentro
+        JOIN equipo eq_contrario ON pe.num_equipoFK = eq_contrario.num_equipo -- Equipo contrario
+        JOIN rueda r ON e.id_ruedaFK = r.id_ruedaPK
+        JOIN gol g ON g.participaEncuentroFK = pe.id_participaEncuentro -- Goles del equipo contrario
+        WHERE
+            r.id_fixtureFK = ? -- Filtra por el fixture específico
+            AND e.id_encuentro IN (
+                SELECT e_sub.id_encuentro
+                FROM
+                    participaEncuentro pe_sub
+                JOIN encuentro e_sub ON pe_sub.id_encuentroFK = e_sub.id_encuentro
+                WHERE
+                    pe_sub.num_equipoFK = ? -- Encuentros donde participó el equipo 10
+            )
+            AND eq_contrario.num_equipo != ?; -- Para contar solo goles del equipo contrario
+
+      `;
+      const golesEnContra = db.prepare(golesEnContraQuery).get(fixtureId, numEquipo, numEquipo) || { goles_en_contra: 0 };
+  
+      // Cálculo de la diferencia de goles
+      const golesFavor = golesAFavor.goles_a_favor;
+      const golesContra = golesEnContra.goles_en_contra;
+      const diferenciaGoles = golesFavor - golesContra;
+  
+      // Almacenamos la información en el arreglo de resultados
+      resultados.push({
+        equipo: equipos[e].equipo,
+        goles_a_favor: golesFavor,
+        goles_en_contra: golesContra,
+        diferencia_goles: diferenciaGoles,
+      });
     }
+  
+    // Ordenar los resultados por diferencia de goles (de mayor a menor)
+    resultados.sort((a, b) => b.diferencia_goles - a.diferencia_goles);
+    console.log(resultados)
+    // Enviar la respuesta
+    res.json(resultados);
+  });
+// #endregion
 
-    try {
-        // Actualizar el campo ID_arbitroFK en ParticipaEncuentro
-        const actualizarArbitro = db.prepare(`
-            UPDATE ParticipaEncuentro
-            SET ID_arbitroFK = ?
-            WHERE ID_encuentroFK = ?
-        `);
-        const resultado = actualizarArbitro.run(id_arbitroFK, id_encuentroFK);
-
-        if (resultado.changes === 0) {
-            return res.status(404).json({ message: 'No se encontró el encuentro especificado para asignar el árbitro' });
-        }
-
-        res.json({ message: 'Árbitro asignado correctamente al encuentro' });
-    } catch (error) {
-        console.error('Error al asignar árbitro:', error.message);
-        res.status(500).json({ error: 'Ocurrió un error al asignar el árbitro' });
-    }
-});
 
 // Iniciar el servidor
 const PORT = 3000;

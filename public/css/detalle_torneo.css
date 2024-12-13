@@ -5,8 +5,18 @@
     align-items: center;
     display: flex;
     border-bottom: 2px solid var(--secundary-color);
+    gap: 3rem;
 }
-
+#comenzarTorneoButton{
+    background-color: var(--third-color);
+    border: 1px solid var(--primary-color);
+    padding: .7rem 1.3rem;
+    border-radius: .6rem;
+    font-family: raleway-semibold;
+    font-size: clamp(1.4rem, 1.3vw, 1.8rem);
+    color: var(--fourth-color);
+    cursor: pointer;
+}
 .wrapperTorneo>#nameTorneo {
     font-family: raleway-bold;
     font-size: clamp(2.8rem, 1.6vw, 3.6rem);
@@ -39,13 +49,20 @@
 
 .wrapperDetalleTorneo {
     display: flex;
-    height: 65vh;
+    height: 75vh;
     width: 100%;
     padding: 1.5rem;
 }
 
 .wrapperDetalleTorneo>.containerDetalleTorneo {
     width: 35%;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.wrapperDetalleTorneo>.containerDetailOne,.wrapperDetalleTorneo>.containerDetailTwo{
+    overflow-y: auto;
 }
 
 .wrapperDetalleTorneo>#fixtureContainer {
@@ -82,6 +99,31 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+#listFixtures > li.i_fix{
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    align-items: center;
+}
+
+#listFixtures > li.i_fix > .fixtureItemWrapper{
+    width: 100%;
+}
+#listFixtures > li.i_fix > button{
+    width: 2.5rem;
+    height: 2.5rem;
+    cursor: pointer;
+    color: var(--fourth-color);
+    background-color: rgb(233, 52, 52);
+    border: none;
+    border-radius: .6rem;
+    outline: none;
+    position: absolute;
+    left: 105%;
+
 }
 
 .fixtureItemWrapper>h2 {
@@ -314,12 +356,322 @@
     font-size: clamp(1.4rem, 1.2vw, 1.8rem);
     cursor: pointer;
 }
+#containerDetailOne .fechaContainer{
+    width: 100%;
+}
 
-
-#containerDetailOne .encuentroContainer {
+#containerDetailOne .encuentroWrapper{
     display: flex;
     gap: 1rem;
+    width: 70%;
+    position: relative;
+    align-items: center;
+    margin: .5rem auto;
+}
+
+#containerDetailOne .encuentroContainer {
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
     padding: 1rem;
-    border: 1px solid #000;
+    border: 1px solid var(--third-color);;
     border-radius: .6rem;
+    width: 100%;
+    text-align: center;
+    /* justify-content: space-around; */
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    margin: 0 .6rem;
+}
+
+#containerDetailOne .encuentroContainer > .golesEncuentroContainer{
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    justify-content: center;
+}
+
+#containerDetailOne .encuentroContainer > .golesEncuentroContainer > .golesTeam{
+    color: var(--secundary-color);
+}
+
+#containerDetailOne .encuentroWrapper > .buttonsActionWrapper{
+    display: none;
+    position: absolute;
+}
+#containerDetailOne .encuentroWrapper > .buttonsActionWrapper.team1{
+    right: 100%;
+}
+#containerDetailOne .encuentroWrapper > .buttonsActionWrapper.team2{
+    left: 100%;
+}
+
+#containerDetailOne .encuentroWrapper:hover > .buttonsActionWrapper{
+    display: flex;
+    gap: 1rem;
+}
+
+#buttonTablaPuntos{
+    padding: 1rem;
+    background-color: var(--primary-color);
+    color: var(--fourth-color);
+    border-radius: .6rem;
+    text-decoration: none;
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    width: 50%;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+.ruedaContainer{
+    margin-top: 1rem;
+}
+
+#containerDetailOne .encuentroWrapper > .buttonsActionWrapper > button{
+    font-family: raleway-semibold;
+    font-size: clamp(1rem, .9vw, 1.3rem);
+    border-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: .3rem;
+    border-radius: .6rem;
+    outline: none;
+    cursor: pointer;
+}
+
+#containerDetailOne .encuentroWrapper > .buttonsActionWrapper > button.buttonGol{
+    background-color: var(--third-color);
+}
+
+#containerDetailOne .encuentroWrapper > .buttonsActionWrapper > button.buttonInfraccion{
+    background-color: #e3813a;
+}
+
+#containerDetailTwo .containerShowTeamsEncuentro{
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+#containerDetailTwo .containerShowTeamsEncuentro > h5{
+    font-family: raleway-bold;
+    font-size: clamp(2.5rem, 1.5vw, 3rem);
+    color: var(--secundary-color);
+}
+
+#containerDetailTwo .containerShowTeamsEncuentro > p{
+    font-family: raleway-semibold;
+    font-size: clamp(1.5rem, 1.3vw, 1.8rem);
+}
+
+#containerDetailTwo > h2{
+    text-align: center;
+    font-size: clamp(1.5rem, 1.2vw, 1.8rem);
+    color: var(--primary-color);
+    font-family: raleway-semibold;
+    margin-bottom: .4rem;
+}
+
+.dataEncuentroContrainer{
+    display: flex;
+    flex-wrap: wrap;
+    padding: .8rem;
+    border-radius:.6rem;
+    border: 1px solid var(--third-color);
+    justify-content: space-around;
+}
+.dataEncuentroContrainer > div > label{
+    font-size: clamp(1rem, 1vw, 1.2rem);
+    color: var(--primary-color);
+    font-family: raleway-semibold;
+}
+.dataEncuentroContrainer > div > input,.dataEncuentroContrainer > div > select{
+    width: 100%;
+    padding: .6rem;
+    border-radius: .6rem;
+    border: 1px solid var(--secundary-color);
+    background-color: #f9f9f9;
+    font-size: clamp(1rem, 1vw, 1.2rem);
+    color: var(--primary-color);
+    font-family: raleway-semibold;
+    outline: none;
+    margin-bottom: .5rem;
+
+}
+
+.dataEncuentroContrainer > #saveDetailsButton{
+    flex-basis: 100%;
+    max-width: 40%;
+    margin: 0 auto;
+    background-color: var(--secundary-color);
+    color: var(--fourth-color);
+    border: none;
+    padding: .6rem 1rem;
+    font-size: clamp(1rem, 1vw, 1.2rem);
+    font-family: raleway-semibold;
+    cursor: pointer;
+    border-radius:.6rem;
+}
+
+.dataEncuentroContrainer > #saveDetailsButton:disabled{
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.dataEncuentroContrainer > div{
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+}
+
+.matchDetails{
+    margin-top: 1rem;
+}
+.matchDetails > .containerEquipo {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.matchDetails > .containerEquipo > div{
+    min-height: 13rem;
+    margin-bottom: 1rem;
+    width: 45%;
+}
+.matchDetails > .containerEquipo > div > div{
+    display: flex;
+    /* gap: 1rem; */
+    justify-content: space-between;
+    padding: .4rem;
+}
+
+.matchDetails > .containerEquipo > .dividerData{
+    width: 1px;
+    border: 1px solid var(--third-color);
+    padding: 0;
+}
+
+
+.matchDetails > .containerEquipo > h3{
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    padding: .6rem;
+    background-color: var(--third-color);
+    border-radius: .6rem;
+    width: 100%;
+    flex-basis: 100%;
+    text-align: center;
+}
+
+.matchDetails > .containerEquipo > div p{
+    font-family: raleway;
+    font-size: clamp(1.1rem, 1.1vw, 1.3rem);
+    /* margin-bottom: .5rem; */
+}
+
+
+.titlePopUp{
+    font-family: raleway-semibold;
+    font-size: clamp(2.3rem, 1.5vw, 3rem);
+    color: var(--secundary-color);
+}
+
+.formPopInfraccionGoles{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.formPopInfraccionGoles>div{
+    width: 30%;
+}
+
+.formPopInfraccionGoles > div > input, .formPopInfraccionGoles > div > select {
+    width: 100%;
+    padding: .6rem;
+    border-radius: .6rem;
+    border: 1px solid var(--secundary-color);
+    background-color: #f9f9f9;
+    font-size: clamp(1.4rem, 1.2vw, 1.7rem);
+    color: var(--primary-color);
+    font-family: raleway-semibold;
+    outline: none;
+    margin-bottom: .5rem;
+}
+
+.formPopInfraccionGoles > div > label{
+    font-size: clamp(1.4rem, 1.2vw, 1.7rem);
+    color: var(--primary-color);
+    font-family: raleway-semibold;
+}
+
+.formPopInfraccionGoles > #saveEventButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.formPopInfraccionGoles > #saveEventButton {
+    flex-basis: 100%;
+    /* max-width: 40%; */
+    /* margin: 0 auto; */
+    background-color: var(--secundary-color);
+    color: var(--fourth-color);
+    border: none;
+    padding: .6rem 1rem;
+    font-size: clamp(1.4rem, 1.2vw, 1.7rem);
+    font-family: raleway-semibold;
+    cursor: pointer;
+    border-radius: .6rem;
+}
+
+.containerTablaPosiciones{
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto; 
+
+}
+.containerTablaPosiciones > h2{
+    font-size: clamp(2.5rem, 1.6vw, 3rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+}
+
+
+.tablaPosiciones{
+    width: 100%; 
+    border-collapse: collapse; 
+    text-align: left;
+    margin-top: 1rem;
+}
+
+.tablaPosiciones > thead th{
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+    /* border: 1px solid #ddd; */
+    background-color: var(--third-color); 
+    padding: 8px;
+    color: var(--primary-color);
+}
+
+.tablaPosiciones > tbody td{
+    border: 1px solid var(--third-color); 
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+    padding: 8px;
+}
+
+.buttonCloseTablaPosiciones{
+    color: var(--primary-color) !important;
+    border: 1px solid var(--third-color) !important;
+    background-color: transparent !important;
+    padding: .6rem 1rem !important;
+    font-size: clamp(1.4rem, 1.2vw, 1.7rem) !important;
+    font-family: raleway-semibold !important;
+    cursor: pointer !important;
+    border-radius: .6rem !important;
 }

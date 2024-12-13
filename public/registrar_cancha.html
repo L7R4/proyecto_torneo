@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Cancha</title>
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/registrar_cancha.css">
+
+</head>
+
+<body>
+    <header>
+        <a>Torneos Resis</a>
+        <nav>
+            <a href="registrar_equipo.html">Registrar equipo</a>
+            <a href="registrar_jugador.html">Registrar jugador</a>
+            <a href="registrar_cancha.html">Registrar cancha</a>
+            <a href="registrar_arbitro.html">Registrar Arbitro</a>
+            <a href="index.html">Ver torneos</a>
+            <!-- <a href="ver_torneos.html">Visualizar torneos</a> -->
+        </nav>
+    </header>
+    <div class="wrapper">
+        <div class="form-container">
+            <h2>Registro de Cancha</h2>
+            <form id="registroCanchaForm">
+                <div class="form-group">
+                    <label for="name">Nombre de la cancha:</label>
+                    <input type="text" id="name" name="name" placeholder="Ej. La bombonera" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="direccion">Direccion:</label>
+                    <input type="text" id="direccion" name="direccion" placeholder="Ej. Av 25 mayo 2032" required>
+
+                </div>
+
+                <div class="form-button">
+                    <button type="submit" disabled>Registrar Cancha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script src="./js/form_registrar_cancha.js"></script>
+</body>
+
+</html>

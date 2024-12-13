@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Arbitro</title>
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/registrar_arbitro.css">
+
+</head>
+
+<body>
+    <header>
+        <a>Torneos Resis</a>
+        <nav>
+            <a href="registrar_equipo.html">Registrar equipo</a>
+            <a href="registrar_jugador.html">Registrar jugador</a>
+            <a href="registrar_cancha.html">Registrar cancha</a>
+            <a href="registrar_arbitro.html">Registrar Arbitro</a>
+            <a href="index.html">Ver torneos</a>
+            <!-- <a href="ver_torneos.html">Visualizar torneos</a> -->
+        </nav>
+    </header>
+    <div class="wrapper">
+        <div class="form-container">
+            <h2>Registro de Arbitro</h2>
+            <form id="registroArbitroForm">
+                <div class="form-group">
+                    <label for="name">Nombre:</label>
+                    <input type="text" id="name" name="name" placeholder="Ej. Octavio" required>
+                </div>
+                <div class="form-group">
+                    <label for="apellido">Apellido:</label>
+                    <input type="text" id="apellido" name="apellido" placeholder="Ej. Silva" required>
+                </div>
+                <div class="form-group">
+                    <label for="dni">DNI:</label>
+                    <input type="number" id="dni" name="dni" placeholder="" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fec_nac">Fecha de nac:</label>
+                    <input type="text" id="fec_nac" name="fec_nac" placeholder="dd/mm/YYYY" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="direccion">Direccion:</label>
+                    <input type="text" id="direccion" name="direccion" placeholder="Ej. Av 25 mayo 2032" required>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="experiencia">Experiencia:</label>
+                    <select id="experiencia_select" name="experiencia" required>
+                        <option value="" disabled selected>Seleccionar experiencia</option>
+                        <option value="Principiante">Principiante</option>
+                        <option value="Intermedio">Intermedio</option>
+                        <option value="Experimentado">Experimentado</option>
+
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input type="checkbox" id="certificado" name="certificado">
+                    <label for="certificado">Certificado</label>
+
+                </div>
+                <div class="form-button">
+                    <button type="submit" disabled>Registrar Cancha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script src="./js/form_registrar_arbitro.js"></script>
+</body>
+
+</html>
